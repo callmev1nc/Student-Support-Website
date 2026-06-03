@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 50px;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 50px;
+      color: #ff0000;
+    }
+
+    p {
+      font-size: 20px;
+    }
+
+    .error-details {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #888;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>⚠️ <%= message || 'Error' %></h1>
+  <p>Oops! It looks like something went wrong.</p>
+  <% if (error) { %>
+    <div class="error-details">
+      <p>Status Code: <%= error.status || 500 %> - <%= error.message || 'Unknown error' %></p>
+    </div>
+    <% if (error.stack) { %>
+      <p>Stack:</p>
+      <pre><%= error.stack %></pre>
+    <% } %>
+  <% } %>
+  <p><a href="/">Go back to Home</a></p>
+</body>
+
+</html>

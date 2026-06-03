@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <title><%= title %></title>
+</head>
+
+<body>
+    <%- include("../templates/header", { headerTitle: "Suggestions" }) %>
+
+    <h1><%= title %></h1>
+    <h2>You logged a <%= mood %> mood today. Here are some suggestions to help you feel better:</h2>
+
+    <ul>
+        <% tips.forEach(tip => { %>
+            <li><%= tip %></li>
+        <% }) %>
+    </ul>
+
+    <%- include("../templates/footer") %>
+</body>
+
+</html>

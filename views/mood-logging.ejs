@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mood Logging Page</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <%- include("../templates/header", { headerTitle: "Mood Logging" }) %>
+
+    <fieldset>
+      <h1>Welcome <%= user.username %> — Role: <%= user.role %>
+      </h1>
+    </fieldset>
+
+    <h2>Mood Logging Page </h2>
+
+    <main class="layout">
+
+      <!-- Left sidebar for additonal things -->
+      <aside class="sidebar-left">
+        <h2>Placeholder</h2>
+        <p>Placeholder</p>
+        <nav>
+
+        </nav>
+      </aside>
+
+      <!-- Centre and form for moods-->
+      <section class="centre">
+        <form id="moodForm" action="/mood/add" method="POST">
+
+          <p>Choose the mood that is closest to how you are feeling today:</p>
+          <div class="mood-options">
+            <input type="radio" id="happy" name="moods" value="Happy">
+            <label for="happy">Happy</label>
+
+            <input type="radio" id="sad" name="moods" value="Sad">
+            <label for="sad">Sad</label>
+
+            <input type="radio" id="angry" name="moods" value="Angry">
+            <label for="angry">Angry</label>
+
+            <input type="radio" id="excited" name="moods" value="Excited">
+            <label for="excited">Excited</label>
+
+            <input type="radio" id="worried" name="moods" value="Worried">
+            <label for="worried">Worried</label>
+
+            <input type="radio" id="calm" name="moods" value="Calm">
+            <label for="calm">Calm</label>
+          </div>
+          <br><br>
+          <button type="submit">Submit</button>
+          <small id="moodError" class="error"></small>
+          </fieldset>
+
+      </section>
+
+      <!-- Right sidebar for additional notes -->
+      <aside class="sidebar-right">
+        <h2>Notes</h2>
+        <textarea id="notes" name="notes" maxlength="200" rows="10" cols="25"
+          placeholder="Less then 200 characters"></textarea>
+        <small id="notesError" class="error"> </small>
+
+      </aside>
+
+      </form>
+
+    </main>
+
+    <%- include("../templates/footer") %>
+
+      <script>
+        document.getElementById("moodForm").addEventListener("submit", function (event) {
+          let isValid = true;
+
+          document.querySelectorAll(".error").forEach(el => el.textContent = "");
+
+          // The user must pick one mood before it can be sumbited.
+          const selectedMood = document.querySelector("input[name='moods']:checked");
+          if (!selectedMood) {
+            document.getElementById("moodError").textContent = "Please select a mood.";
+            isValid = false;
+          }
+
+          // Caps the length of the notes by 200 characters.
+          const notes = document.getElementById("notes").value.trim();
+          if (notes.length > 200) {
+            document.getElementById("notesError").textContent = "Notes cannot exceed 200 characters.";
+            isValid = false;
+          }
+
+          if (!isValid) {
+            event.preventDefault();
+          }
+        });
+
+      </script>
+
+
+      <style>
+        .error {
+          color: red;
+          font-size: 0.9rem;
+        }
+
+
+
+        .layout {
+          display: grid;
+          grid-template-columns: 200px 1fr 250px;
+          /* left, centre, right */
+          gap: 20px;
+          margin: 20px;
+        }
+
+        .centre {
+          display: flex;
+          justify-content: center;
+          /* centre horizontally */
+          align-items: start;
+          /* align to top */
+          padding: 10px;
+        }
+
+        /* Left sidebar */
+        .sidebar-left {
+          background-color: #f4f4f4;
+          padding: 10px;
+        }
+
+        /* Right sidebar */
+        .sidebar-right {
+          background-color: #f9f9f9;
+          padding: 10px;
+        }
+      </style>
+</body>
+
+</html>

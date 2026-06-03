@@ -1,0 +1,72 @@
+:root {
+  --color-bg: #f4f8fc;
+  --color-surface: #ffffff;
+  --color-primary: #7bb1e8;
+  --color-primary-dark: #5b8fc8;
+  --color-border: #c9dff5;
+  --color-accent: #d6e9fa;
+  --radius: 0.8rem;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --font-main: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  font-family: var(--font-main);
+  color: #2f2f2f;
+}
+
+.container {
+  width: 70%;
+  margin: 2rem auto;
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+h2, h3 {
+  color: var(--color-primary-dark);
+}
+
+form {
+  margin: 1rem 0;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 0.7rem;
+  margin: 0.5rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: #f5faff;
+}
+
+button {
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: var(--color-accent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  box-shadow: var(--shadow);
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/stylesheets/login.css">
+</head>
+
+<body>
+
+  <form id="loginForm" action="/login/Dashboard" method="POST">
+    <h2>Login</h2>
+    <% if (error) { %>
+      <p class="error" style="color:red"><%= error %></p>
+    <% } %>
+    <input type="text" name="username" placeholder="Username" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+    <small id="loginError" class="error"></small>
+    <p>Don't have an account? <a href="/register">Register here</a></p>
+  </form>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      let isValid = true;
+
+      document.querySelectorAll(".error").forEach(el => el.textContent = "");
+
+      if (!isValid) {
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+
+</html>

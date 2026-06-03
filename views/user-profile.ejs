@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link rel="stylesheet" href="/stylesheets/profile.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <%- include("../templates/header", { headerTitle: "User Profile" }) %>
+
+    <div class="profile-card">
+      <h2>
+        <%= user.username %>
+      </h2>
+
+      <div class="info">
+        <p><strong>Email:</strong>
+          <%= user.email %>
+        </p>
+        <p><strong>Role:</strong>
+          <%= user.role %>
+        </p>
+        <% if (user.date) { %>
+          <p><strong>Joined:</strong>
+            <%= new Date(user.date).toLocaleDateString() %>
+          </p>
+        <% } %>
+      </div>
+
+    </div>
+
+</body>
+
+</html>
