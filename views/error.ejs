@@ -4,54 +4,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 50px;
-      background-color: #f8f8f8;
-      color: #333;
-    }
-
-    h1 {
-      font-size: 50px;
-      color: #ff0000;
-    }
-
-    p {
-      font-size: 20px;
-    }
-
-    .error-details {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #888;
-    }
-
-    a {
-      text-decoration: none;
-      color: #007bff;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <title><%= title || 'Error' %></title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 
 <body>
-  <h1>⚠️ <%= message || 'Error' %></h1>
-  <p>Oops! It looks like something went wrong.</p>
-  <% if (error) { %>
-    <div class="error-details">
-      <p>Status Code: <%= error.status || 500 %> - <%= error.message || 'Unknown error' %></p>
-    </div>
-    <% if (error.stack) { %>
-      <p>Stack:</p>
-      <pre><%= error.stack %></pre>
+  <%- include("header", { headerTitle: "Error" }) %>
+
+  <div class="container text-center" style="padding-top:3rem;padding-bottom:3rem;">
+    <h1 style="font-size:4rem;color:var(--wsu-red);">⚠️</h1>
+    <h2><%= message || 'Something went wrong' %></h2>
+    <p style="color:var(--color-text-muted);margin-top:0.5rem;">Oops! It looks like something went wrong.</p>
+
+    <% if (error) { %>
+      <div class="card mt-2" style="text-align:left;max-width:600px;margin:1rem auto;">
+        <p><strong>Status:</strong> <%= error.status || 500 %></p>
+        <% if (error.stack) { %>
+          <pre style="background:var(--gray-100);padding:1rem;border-radius:var(--radius);font-size:0.8rem;overflow-x:auto;margin-top:0.5rem;"><%= error.stack %></pre>
+        <% } %>
+      </div>
     <% } %>
-  <% } %>
-  <p><a href="/">Go back to Home</a></p>
+
+    <a href="/" class="btn btn-primary mt-2">Go Back Home</a>
+  </div>
+
+  <%- include("footer") %>
 </body>
 
 </html>

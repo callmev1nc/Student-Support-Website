@@ -3,21 +3,20 @@
 
 <head>
   <title><%= title %></title>
-  <link rel='stylesheet' href='/stylesheets/home.css' />
-  <link rel="stylesheet" href="/stylesheets/style.css">
+  <link rel='stylesheet' href='/stylesheets/style.css'>
+  <link rel="stylesheet" href="/stylesheets/home.css">
 </head>
 
 <body>
   <%- include("header", { headerTitle: title }) %>
 
-  <div class="center-container">
-    <h1><%= title %></h1>
-    <p><b>Welcome to CampusWell — your student support platform</b></p>
-    <br>
-    <br>
-    <div class="button-container">
-      <a href="/login" class="btn">Login</a>
-      <a href="/register" class="btn">Register</a>
+  <div class="landing-hero">
+    <h1>CampusWell</h1>
+    <p class="subtitle">Western Sydney University</p>
+    <p>Your student mental wellbeing platform. Track your mood, discover campus events, and access support whenever you need it.</p>
+    <div class="landing-buttons">
+      <a href="/login" class="btn btn-primary">Login</a>
+      <a href="/register" class="btn btn-secondary">Register</a>
     </div>
   </div>
 

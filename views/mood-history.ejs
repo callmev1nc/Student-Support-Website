@@ -4,97 +4,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>
-    <%= title %>
-  </title>
+  <title>Mood History</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 
 <body>
+  <%- include("header", { headerTitle: "Mood History" }) %>
 
-  <!-- Include header, using headerTitle passed from controller -->
-  <%- include("header", { headerTitle: headerTitle }) %>
+  <div class="page-banner">
+    <h1>Your Mood History</h1>
+    <p>Track your emotional wellbeing over time</p>
+  </div>
 
-    <fieldset>
-      <h1>Welcome <%= user ? user.username : "Guest" %>! — Your Mood History</h1>
-    </fieldset>
+  <div class="container">
 
-    <h2>Previously Entered Moods</h2>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value"><%= totalMoods %></div>
+        <div class="stat-label">Total Moods</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--color-success);"><%= positiveMoods %></div>
+        <div class="stat-label">Positive</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--wsu-red);"><%= negativeMoods %></div>
+        <div class="stat-label">Negative</div>
+      </div>
+    </div>
 
-    <main class="layout">
+    <% if (moods.length === 0) { %>
+      <div class="card text-center">
+        <p>No moods logged yet. <a href="/mood">Log your first mood</a></p>
+      </div>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Mood</th>
+            <th>Type</th>
+            <th>Notes</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% moods.forEach(mood => { %>
+            <tr>
+              <td><%= mood.mood %></td>
+              <td><%= mood.mood_type %></td>
+              <td><%= mood.notes %></td>
+              <td><%= new Date(mood.date).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
 
-      <!-- Left sidebar for calendar and navigation -->
-      <aside class="sidebar-left">
-        <!-- optional navigation / calendar -->
-      </aside>
+  </div>
 
-      <!-- Centre content: list of previous moods -->
-      <section class="centre">
-        <table border="1" cellpadding="10" cellspacing="0">
-          <p>So far you have entered <%= totalMoods %> moods:</p>
-
-          <% if (moods.length===0) { %>
-            <p>No moods logged yet.</p>
-            <% } else { %>
-              <tr>
-                <th>Mood</th>
-                <th>Mood Type</th>
-                <th>Additional Notes</th>
-                <th>Date</th>
-              </tr>
-              <% moods.forEach(mood=> { %>
-                <tr>
-                  <td>
-                    <%= mood.mood %>
-                  </td>
-                  <td>
-                    <%= mood.mood_type %>
-                  </td>
-                  <td>
-                    <%= mood.notes %>
-                  </td>
-                  <td>
-                    <%= new Date(mood.date).toLocaleString() %>
-                  </td>
-                </tr>
-                <% }) %>
-                  <% } %>
-        </table>
-      </section>
-
-    </main>
-
-    <footer>
-      <%- include("footer") %>
-    </footer>
-
-    <style>
-      .layout {
-        display: grid;
-        grid-template-columns: 200px 1fr 250px;
-        gap: 20px;
-        margin: 20px;
-      }
-
-      .centre {
-        padding: 10px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      table th {
-        background-color: #333;
-        color: white;
-      }
-
-      table td {
-        background-color: #f9f9f9;
-      }
-    </style>
-
+  <%- include("footer") %>
 </body>
 
 </html>

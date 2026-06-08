@@ -1,82 +1,31 @@
-:root {
-  --color-bg: #eef6fd;
-  --color-primary: #7bb1e8;
-  --color-primary-dark: #5b8fc8;
-  --color-border: #c9dff5;
-  --radius: 0.8rem;
-  --shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  --font-main: "Inter", "Segoe UI", sans-serif;
-}
-
-body {
-  background-color: var(--color-bg);
-  font-family: var(--font-main);
-  margin: 0;
-  padding: 0;
+/* Login Page */
+.login-wrapper {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-}
-
-/* Navbar styling */
-.navbar {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--color-primary);
-  padding: 0.8rem 2rem;
-  box-shadow: var(--shadow);
-  border-radius: 0 0 var(--radius) var(--radius);
-  margin-bottom: 2rem;
-}
-
-.navbar .nav-logo a {
-  color: white;
-  font-weight: bold;
-  text-decoration: none;
-  font-size: 1.2rem;
-}
-
-.navbar .nav-links {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-}
-
-.navbar .nav-links li a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: 0.25s;
-}
-
-.navbar .nav-links li a:hover {
-  color: var(--color-bg);
-}
-
-/* Center the login form below navbar */
-form {
-  background-color: white;
+  min-height: calc(100vh - 64px - 200px);
   padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  width: 320px;
-  text-align: center;
-  margin-top: 2rem; /* ensures spacing below navbar */
 }
-
-h2 {
-  color: var(--color-primary-dark);
-  margin-bottom: 1rem;
-}
-
-input {
+.login-card {
+  background: var(--white);
+  padding: 2.5rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
   width: 100%;
-  padding:
-    0.7rem;
-  margin: 0.5rem 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background-color: #f5faff;
-} 
+  max-width: 400px;
+}
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--gray-800);
+}
+.login-card .login-link {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+.login-card .login-link a {
+  color: var(--wsu-red);
+  font-weight: 600;
+}

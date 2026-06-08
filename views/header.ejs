@@ -1,30 +1,34 @@
 <header class="page-header">
   <div class="header-content">
-    <h1>
-      <%= headerTitle %>
-    </h1>
-    <nav class="navbar">
-      <div class="nav-logo">
-        <a href="/">CampusWell</a>
-      </div>
-      <ul class="nav-links">
-        <!--Show this navbar only for logged in users-->
-        <% if (user) { %>
-          <li><a href="/">Home</a></li>
-          <li><a href="/mood">Mood Logging</a></li>
-          <li><a href="/mood/history">Mood History</a></li>
-          <li><a href="/events">Events</a></li>
-          <li><a href="/support">Support</a></li>
-          <li><a href="/user-profile">User Profile</a></li>
-          <li><a href="/logout">Logout</a></li>
-          <% } else { %>
-            <!--Show this navbar only for guests (not logged in users)-->
-            <li><a href="/">Home</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/register">Register</a></li>
-            <li><a href="/support">Support</a></li>
-            <% } %>
-      </ul>
-    </nav>
+    <div class="nav-logo">
+      <a href="/">
+        <span class="logo-text">CampusWell</span>
+        <span class="logo-sub">Western Sydney University</span>
+      </a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <% if (user) { %>
+        <li><a href="/">Home</a></li>
+        <li><a href="/mood">Mood Logging</a></li>
+        <li><a href="/mood/history">Mood History</a></li>
+        <li><a href="/events">Events</a></li>
+        <li><a href="/support">Support</a></li>
+        <li><a href="/user-profile">Profile</a></li>
+        <li><a href="/logout" style="color:var(--wsu-red);font-weight:600;">Logout</a></li>
+      <% } else { %>
+        <li><a href="/">Home</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+        <li><a href="/support">Support</a></li>
+      <% } %>
+    </ul>
   </div>
 </header>
+<script>
+  document.getElementById('hamburger')?.addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('active');
+  });
+</script>
