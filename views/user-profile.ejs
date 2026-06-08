@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +7,22 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
   <link rel="stylesheet" href="/stylesheets/profile.css">
 </head>
-
 <body>
   <%- include("header", { headerTitle: "User Profile" }) %>
 
   <div class="page-banner">
-    <h1>Your Profile</h1>
-    <p>View your account details</p>
+    <div class="page-banner-inner">
+      <h1>Your Profile</h1>
+      <p>View your account details</p>
+    </div>
   </div>
 
   <div class="profile-card">
     <div class="profile-avatar">
       <%= user.username ? user.username.charAt(0).toUpperCase() : '?' %>
     </div>
-    <h2><%= user.username %></h2>
+    <h2 style="margin-bottom:0.25rem;"><%= user.username %></h2>
+    <p style="color:var(--color-text-muted);font-size:0.85rem;margin:0;"><%= user.role || 'student' %></p>
 
     <div class="profile-info">
       <p>
@@ -34,7 +35,7 @@
       </p>
       <% if (user.date) { %>
         <p>
-          <strong>Joined</strong>
+          <strong>Member Since</strong>
           <%= new Date(user.date).toLocaleDateString() %>
         </p>
       <% } %>
@@ -43,5 +44,4 @@
 
   <%- include("footer") %>
 </body>
-
 </html>

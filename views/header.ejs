@@ -6,18 +6,18 @@
         <span class="logo-sub">Western Sydney University</span>
       </a>
     </div>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
       <% if (user) { %>
         <li><a href="/">Home</a></li>
-        <li><a href="/mood">Mood Logging</a></li>
-        <li><a href="/mood/history">Mood History</a></li>
+        <li><a href="/mood">Mood</a></li>
+        <li><a href="/mood/history">History</a></li>
         <li><a href="/events">Events</a></li>
         <li><a href="/support">Support</a></li>
         <li><a href="/user-profile">Profile</a></li>
-        <li><a href="/logout" style="color:var(--wsu-red);font-weight:600;">Logout</a></li>
+        <li><a href="/logout" class="nav-logout">Logout</a></li>
       <% } else { %>
         <li><a href="/">Home</a></li>
         <li><a href="/login">Login</a></li>

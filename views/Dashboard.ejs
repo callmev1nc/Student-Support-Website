@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +7,14 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
   <link rel="stylesheet" href="/stylesheets/Dashboard.css">
 </head>
-
 <body>
   <%- include("header", { headerTitle: "Dashboard" }) %>
 
   <div class="page-banner">
-    <h1>Welcome, <%= user.username %>!</h1>
-    <p>Manage events and stay connected with campus</p>
+    <div class="page-banner-inner">
+      <h1>Welcome, <%= user.username %></h1>
+      <p>Manage events and stay connected with campus</p>
+    </div>
   </div>
 
   <div class="dashboard-grid">
@@ -22,10 +22,11 @@
     <fieldset class="fieldset-card">
       <legend>Add Event</legend>
       <form action="/events" method="POST">
-        <input type="text" name="title" placeholder="Event Name" required>
-        <label for="type">Type of Event:</label>
+        <label for="title">Event Name</label>
+        <input type="text" name="title" id="title" placeholder="Enter event name" required>
+        <label for="type">Event Type</label>
         <select name="type" id="type" required>
-          <option value="">-- Select a type --</option>
+          <option value="">-- Select type --</option>
           <option value="gaming">Gaming</option>
           <option value="study">Study</option>
           <option value="sport">Sport</option>
@@ -33,8 +34,10 @@
           <option value="politics">Politics</option>
           <option value="other">Other</option>
         </select>
-        <input type="date" name="date" required>
-        <textarea name="description" placeholder="Description"></textarea>
+        <label for="date">Date</label>
+        <input type="date" name="date" id="date" required>
+        <label for="description">Description</label>
+        <textarea name="description" id="description" placeholder="Brief description of the event" rows="3"></textarea>
         <button type="submit" class="btn btn-primary" style="width:100%;">Add Event</button>
       </form>
     </fieldset>
@@ -42,8 +45,9 @@
     <fieldset class="fieldset-card">
       <legend>Search Events</legend>
       <form action="/events/search" method="GET">
-        <input type="text" name="query" placeholder="Search by name">
-        <button type="submit" class="btn btn-secondary" style="width:100%;">Search</button>
+        <label for="query">Search by name</label>
+        <input type="text" name="query" id="query" placeholder="Search events...">
+        <button type="submit" class="btn btn-secondary" style="width:100%;margin-top:0.5rem;">Search</button>
       </form>
     </fieldset>
 
@@ -63,7 +67,7 @@
             <tbody>
               <% events.forEach(event => { %>
                 <tr>
-                  <td><%= event.event_title %></td>
+                  <td><strong><%= event.event_title %></strong></td>
                   <td><%= event.event_type %></td>
                   <td><%= event.event_description %></td>
                   <td><%= new Date(event.event_date).toLocaleDateString() %></td>
@@ -72,7 +76,7 @@
             </tbody>
           </table>
         <% } else { %>
-          <p style="color:var(--color-text-muted);text-align:center;padding:1rem;">No events found.</p>
+          <p style="color:var(--color-text-muted);text-align:center;padding:2rem 0;">No events found.</p>
         <% } %>
       </fieldset>
     </section>
@@ -81,5 +85,4 @@
 
   <%- include("footer") %>
 </body>
-
 </html>

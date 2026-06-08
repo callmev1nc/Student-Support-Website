@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mood Logging</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
   <%- include("header", { headerTitle: "Mood Logging" }) %>
 
   <div class="page-banner">
-    <h1>How are you feeling, <%= user.username %>?</h1>
-    <p>Select the mood that best describes how you feel right now</p>
+    <div class="page-banner-inner">
+      <h1>How are you feeling?</h1>
+      <p>Select the mood that best describes how you feel right now</p>
+    </div>
   </div>
 
   <div class="container">
@@ -22,39 +22,75 @@
       <div class="mood-options">
         <label class="mood-option" for="happy">
           <input type="radio" id="happy" name="moods" value="Happy">
-          <span class="mood-emoji">😊</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <circle cx="15" cy="17" r="2.5" fill="#BB1B36"/>
+            <circle cx="29" cy="17" r="2.5" fill="#BB1B36"/>
+            <path d="M13 27 Q22 35 31 27" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Happy</span>
         </label>
         <label class="mood-option" for="sad">
           <input type="radio" id="sad" name="moods" value="Sad">
-          <span class="mood-emoji">😢</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <circle cx="15" cy="17" r="2.5" fill="#BB1B36"/>
+            <circle cx="29" cy="17" r="2.5" fill="#BB1B36"/>
+            <path d="M14 32 Q22 24 30 32" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Sad</span>
         </label>
         <label class="mood-option" for="angry">
           <input type="radio" id="angry" name="moods" value="Angry">
-          <span class="mood-emoji">😠</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <line x1="11" y1="14" x2="18" y2="17" stroke="#BB1B36" stroke-width="2" stroke-linecap="round"/>
+            <line x1="33" y1="14" x2="26" y2="17" stroke="#BB1B36" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="15" cy="19" r="2" fill="#BB1B36"/>
+            <circle cx="29" cy="19" r="2" fill="#BB1B36"/>
+            <path d="M15 31 Q22 27 29 31" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Angry</span>
         </label>
         <label class="mood-option" for="excited">
           <input type="radio" id="excited" name="moods" value="Excited">
-          <span class="mood-emoji">🤩</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <circle cx="15" cy="16" r="3" fill="none" stroke="#BB1B36" stroke-width="2"/>
+            <circle cx="29" cy="16" r="3" fill="none" stroke="#BB1B36" stroke-width="2"/>
+            <circle cx="15" cy="16" r="1" fill="#BB1B36"/>
+            <circle cx="29" cy="16" r="1" fill="#BB1B36"/>
+            <path d="M12 25 Q17 34 22 34 Q27 34 32 25" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Excited</span>
         </label>
         <label class="mood-option" for="worried">
           <input type="radio" id="worried" name="moods" value="Worried">
-          <span class="mood-emoji">😟</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <path d="M12 14 Q15 12 18 14" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M26 14 Q29 12 32 14" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="15" cy="18" r="2" fill="#BB1B36"/>
+            <circle cx="29" cy="18" r="2" fill="#BB1B36"/>
+            <path d="M17 30 Q19 28 22 30 Q25 32 27 30" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Worried</span>
         </label>
         <label class="mood-option" for="calm">
           <input type="radio" id="calm" name="moods" value="Calm">
-          <span class="mood-emoji">😌</span>
+          <svg class="mood-icon" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="#BB1B36" stroke-width="2" fill="#FEF2F2"/>
+            <path d="M12 18 Q15 15 18 18" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M26 18 Q29 15 32 18" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M16 28 Q22 32 28 28" stroke="#BB1B36" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
           <span class="mood-label">Calm</span>
         </label>
       </div>
 
       <div class="card mt-2">
-        <h3>Notes (optional)</h3>
-        <textarea id="notes" name="notes" maxlength="200" rows="3" placeholder="How's your day? Max 200 characters..."></textarea>
+        <label for="notes" style="margin-bottom:0.5rem;">Additional Notes</label>
+        <textarea id="notes" name="notes" maxlength="200" rows="3" placeholder="How's your day? (max 200 characters)"></textarea>
       </div>
 
       <div class="mt-2">
@@ -67,30 +103,25 @@
   <%- include("footer") %>
 
   <script>
-    document.getElementById("moodForm").addEventListener("submit", function (event) {
-      let isValid = true;
+    document.getElementById("moodForm").addEventListener("submit", function (e) {
+      let valid = true;
       document.querySelectorAll(".error").forEach(el => el.textContent = "");
-      const selectedMood = document.querySelector("input[name='moods']:checked");
-      if (!selectedMood) {
+      if (!document.querySelector("input[name='moods']:checked")) {
         document.getElementById("moodError").textContent = "Please select a mood.";
-        isValid = false;
+        valid = false;
       }
-      const notes = document.getElementById("notes").value.trim();
-      if (notes.length > 200) {
+      if (document.getElementById("notes").value.trim().length > 200) {
         document.getElementById("moodError").textContent = "Notes cannot exceed 200 characters.";
-        isValid = false;
+        valid = false;
       }
-      if (!isValid) event.preventDefault();
+      if (!valid) e.preventDefault();
     });
-
-    // Visual feedback for mood selection
     document.querySelectorAll('.mood-option input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', function () {
-        document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+        document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
         this.closest('.mood-option').classList.add('selected');
       });
     });
   </script>
 </body>
-
 </html>

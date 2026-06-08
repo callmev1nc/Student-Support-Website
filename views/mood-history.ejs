@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mood History</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
   <%- include("header", { headerTitle: "Mood History" }) %>
 
   <div class="page-banner">
-    <h1>Your Mood History</h1>
-    <p>Track your emotional wellbeing over time</p>
+    <div class="page-banner-inner">
+      <h1>Your Mood History</h1>
+      <p>Track your emotional wellbeing over time</p>
+    </div>
   </div>
 
   <div class="container">
-
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-value"><%= totalMoods %></div>
-        <div class="stat-label">Total Moods</div>
+        <div class="stat-label">Total Entries</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" style="color:var(--color-success);"><%= positiveMoods %></div>
+        <div class="stat-value" style="color:#16A34A"><%= positiveMoods %></div>
         <div class="stat-label">Positive</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" style="color:var(--wsu-red);"><%= negativeMoods %></div>
+        <div class="stat-value" style="color:var(--wsu-red)"><%= negativeMoods %></div>
         <div class="stat-label">Negative</div>
       </div>
     </div>
 
     <% if (moods.length === 0) { %>
-      <div class="card text-center">
-        <p>No moods logged yet. <a href="/mood">Log your first mood</a></p>
+      <div class="card text-center" style="padding:2.5rem;">
+        <p style="margin:0;color:var(--color-text-muted);">No moods logged yet. <a href="/mood">Log your first mood</a></p>
       </div>
     <% } else { %>
       <table>
@@ -50,7 +49,7 @@
         <tbody>
           <% moods.forEach(mood => { %>
             <tr>
-              <td><%= mood.mood %></td>
+              <td><strong><%= mood.mood %></strong></td>
               <td><%= mood.mood_type %></td>
               <td><%= mood.notes %></td>
               <td><%= new Date(mood.date).toLocaleString() %></td>
@@ -59,10 +58,8 @@
         </tbody>
       </table>
     <% } %>
-
   </div>
 
   <%- include("footer") %>
 </body>
-
 </html>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,33 +7,30 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
   <link rel="stylesheet" href="/stylesheets/register.css">
 </head>
-
 <body>
   <%- include("header", { headerTitle: "Registration" }) %>
 
   <div class="register-wrapper">
     <div class="register-card">
+      <h2>Create Account</h2>
+      <p class="uni-name">Western Sydney University</p>
       <form id="registerForm" action="/register/home" method="POST">
-        <h2>Create Account</h2>
-        <p class="uni-name">Western Sydney University</p>
-
         <% if (error) { %>
           <div class="alert alert-error"><%= error %></div>
         <% } %>
-
-        <input type="text" id="username" name="username" placeholder="Username" required>
-        <input type="email" id="email" name="email" placeholder="Email" required>
-        <input type="password" id="password" name="password" placeholder="Password" required>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Choose a username" required>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="your.name@westernsydney.edu.au" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Create a password" required>
         <input type="hidden" name="roleName" value="student">
-
-        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Sign Up</button>
-
-        <p class="login-link">Already have an account? <a href="/login">Login here</a></p>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Create Account</button>
+        <p class="login-link">Already have an account? <a href="/login">Sign in</a></p>
       </form>
     </div>
   </div>
 
   <%- include("footer") %>
 </body>
-
 </html>
