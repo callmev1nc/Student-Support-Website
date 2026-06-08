@@ -55,11 +55,13 @@ app.use("/events", eventRouter);
 // Start the server
 server.errorHandling(app);
 export let runningServer;
-if (process.env.NODE_ENV === 'test') {
-  codeTrace('Running in test mode - not starting server, just exporting app');
+if (process.env.NODE_ENV === 'test' || process.env.VERCEL) {
+  codeTrace('Running in test/serverless mode - not starting server, just exporting app');
 } else {
   runningServer = app.listen(server.port, () => {
     console.log(`Example app listening on port http://127.0.0.1:${server.port}`);
     debug('testing');
   });
 }
+
+export default app;
