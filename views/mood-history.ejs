@@ -13,7 +13,7 @@
 <body>
 
   <!-- Include header, using headerTitle passed from controller -->
-  <%- include("../templates/header", { headerTitle: headerTitle }) %>
+  <%- include("header", { headerTitle: headerTitle }) %>
 
     <fieldset>
       <h1>Welcome <%= user ? user.username : "Guest" %>! — Your Mood History</h1>
@@ -65,7 +65,7 @@
     </main>
 
     <footer>
-      <%- include("../templates/footer") %>
+      <%- include("footer") %>
     </footer>
 
     <style>

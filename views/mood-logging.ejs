@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <%- include("../templates/header", { headerTitle: "Mood Logging" }) %>
+  <%- include("header", { headerTitle: "Mood Logging" }) %>
 
     <fieldset>
       <h1>Welcome <%= user.username %> — Role: <%= user.role %>
@@ -73,7 +73,7 @@
 
     </main>
 
-    <%- include("../templates/footer") %>
+    <%- include("footer") %>
 
       <script>
         document.getElementById("moodForm").addEventListener("submit", function (event) {
