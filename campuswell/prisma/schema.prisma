@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  STAFF
+  ADMIN
+}
+
+enum TicketCategory {
+  ACADEMIC
+  MENTAL_HEALTH
+  TECHNICAL
+  BULLYING
+  ATTENDANCE
+  FINANCIAL
+  GENERAL
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  NEW
+  IN_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  TICKET
+  APPOINTMENT
+  MESSAGE
+  ANNOUNCEMENT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  avatarUrl    String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tickets           Ticket[]
+  assignedTickets   Ticket[]        @relation("AssignedTickets")
+  comments          Comment[]
+  appointments      Appointment[]   @relation("StudentAppointments")
+  staffAppointments Appointment[]   @relation("StaffAppointments")
+  conversationsA    Conversation[]  @relation("ParticipantA")
+  conversationsB    Conversation[]  @relation("ParticipantB")
+  sentMessages      Message[]
+  notifications     Notification[]
+  authoredAnnouncements Announcement[]
+  authoredResources     Resource[]
+
+  @@map("users")
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  subject     String
+  description String
+  category    TicketCategory @default(GENERAL)
+  priority    TicketPriority @default(MEDIUM)
+  status      TicketStatus   @default(NEW)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  studentId    String
+  student      User    @relation(fields: [studentId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  comments    Comment[]
+  attachments Attachment[]
+
+  @@map("tickets")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  ticketId String
+  ticket   Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User    @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  createdAt DateTime @default(now())
+
+  ticketId String
+  ticket   Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Appointment {
+  id               String             @id @default(cuid())
+  title            String
+  description      String?
+  status           AppointmentStatus  @default(PENDING)
+  scheduledAt      DateTime
+  durationMinutes  Int                @default(30)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  studentId String
+  student   User  @relation("StudentAppointments", fields: [studentId], references: [id])
+
+  staffId String
+  staff   User    @relation("StaffAppointments", fields: [staffId], references: [id])
+
+  @@map("appointments")
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  participantAId String
+  participantA   User  @relation("ParticipantA", fields: [participantAId], references: [id])
+
+  participantBId String
+  participantB   User  @relation("ParticipantB", fields: [participantBId], references: [id])
+
+  messages Message[]
+
+  @@unique([participantAId, participantBId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  content        String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User    @relation(fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  authorId String
+  author   User     @relation(fields: [authorId], references: [id])
+
+  @@map("announcements")
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  url         String
+  type        String   @default("LINK")
+  createdAt   DateTime @default(now())
+
+  authorId String
+  author   User     @relation(fields: [authorId], references: [id])
+
+  @@map("resources")
+}
