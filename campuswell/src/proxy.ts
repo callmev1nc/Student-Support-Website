@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-// Simple cookie-based auth check for middleware
+// Simple cookie-based auth check for proxy
 // (Prisma can't run in Edge Runtime, so we check JWT cookie existence)
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const sessionToken =
     request.cookies.get("authjs.session-token")?.value ||
     request.cookies.get("__Secure-authjs.session-token")?.value
