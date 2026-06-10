@@ -4,7 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg"
 import bcrypt from "bcryptjs"
 
 const adapter = new PrismaPg({
-  host: "aws-0-ap-northeast-1.pooler.supabase.com",
+  host: "aws-1-ap-northeast-1.pooler.supabase.com",
   port: 6543,
   database: "postgres",
   user: "postgres.fvoophnzfvwwapwmwinp",

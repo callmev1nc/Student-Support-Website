@@ -9,7 +9,11 @@ function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL!.replace("?sslmode=require", "")
   const adapter = new PrismaPg({
     connectionString,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    // Supavisor pooler requires these settings
+    max: 10,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 15_000,
   })
   return new PrismaClient({ adapter })
 }

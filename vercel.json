@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd campuswell && npx next build",
+  "buildCommand": "cd campuswell && npx prisma generate && npx next build",
   "outputDirectory": "campuswell/.next",
   "installCommand": "cd campuswell && npm install"
 }
