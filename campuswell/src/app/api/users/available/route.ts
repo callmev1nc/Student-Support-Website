@@ -4,21 +4,28 @@ import { prisma } from "@/lib/prisma"
 import type { Role } from "@/generated/prisma/enums"
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+    const userId = (session.user as Record<string, unknown>).id as string
+    const role = (session.user as Record<string, unknown>).role as string
 
-  const where = role === "STUDENT"
-    ? { role: { in: ["STAFF", "ADMIN"] as Role[] } }
-    : {}
+    const where = role === "STUDENT"
+      ? { role: { in: ["STAFF", "ADMIN"] as Role[] } }
+      : {}
 
-  const users = await prisma.user.findMany({
-    where: { id: { not: userId }, ...where },
-    select: { id: true, name: true, email: true, role: true },
-    orderBy: { name: "asc" },
-  })
+    const users = await prisma.user.findMany({
+      where: { id: { not: userId }, ...where },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: { name: "asc" },
+    })
 
-  return NextResponse.json({ users })
+    return NextResponse.json({ users })
+  } catch (err) {
+    console.error("[api/users/available] failed:", err)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }

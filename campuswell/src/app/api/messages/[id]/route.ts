@@ -6,37 +6,44 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-  const { id } = await params
-  const userId = (session.user as Record<string, unknown>).id as string
+    const { id } = await params
+    const userId = (session.user as Record<string, unknown>).id as string
 
-  const conversation = await prisma.conversation.findUnique({
-    where: { id },
-    include: {
-      participantA: { select: { id: true, name: true, role: true } },
-      participantB: { select: { id: true, name: true, role: true } },
-      messages: {
-        orderBy: { createdAt: "asc" },
-        include: { sender: { select: { id: true, name: true, role: true } } },
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
+      include: {
+        participantA: { select: { id: true, name: true, role: true } },
+        participantB: { select: { id: true, name: true, role: true } },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: { sender: { select: { id: true, name: true, role: true } } },
+        },
       },
-    },
-  })
+    })
 
-  if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 })
-  if (conversation.participantAId !== userId && conversation.participantBId !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    if (conversation.participantAId !== userId && conversation.participantBId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    const otherUser =
+      conversation.participantAId === userId
+        ? conversation.participantB
+        : conversation.participantA
+
+    return NextResponse.json({
+      id: conversation.id,
+      otherUser,
+      messages: conversation.messages,
+    })
+  } catch (err) {
+    console.error("[api/messages/[id]] failed:", err)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const otherUser =
-    conversation.participantAId === userId
-      ? conversation.participantB
-      : conversation.participantA
-
-  return NextResponse.json({
-    id: conversation.id,
-    otherUser,
-    messages: conversation.messages,
-  })
 }

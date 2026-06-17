@@ -3,13 +3,21 @@ import { PrismaClient, Role, TicketCategory, TicketPriority, TicketStatus, Appoi
 import { PrismaPg } from "@prisma/adapter-pg"
 import bcrypt from "bcryptjs"
 
+function getDatabaseUrl() {
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL is not set. Copy .env.example to .env and fill in your Supabase pooler URL."
+    )
+  }
+  return url.replace("?sslmode=require", "")
+}
+
+// Build the adapter from DATABASE_URL (same approach as src/lib/prisma.ts) so
+// no host/user/password is hardcoded in this file.
 const adapter = new PrismaPg({
-  host: "aws-1-ap-northeast-1.pooler.supabase.com",
-  port: 6543,
-  database: "postgres",
-  user: "postgres.fvoophnzfvwwapwmwinp",
-  password: process.env.SUPABASE_DB_PASSWORD || "Vi0909013878",
-  ssl: { rejectUnauthorized: false }
+  connectionString: getDatabaseUrl(),
+  ssl: { rejectUnauthorized: false },
 })
 const prisma = new PrismaClient({ adapter })
 

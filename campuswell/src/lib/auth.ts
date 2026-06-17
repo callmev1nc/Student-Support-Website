@@ -3,6 +3,21 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 
+// In production we require a real AUTH_SECRET. The static fallback is dev-only
+// so a misconfigured deploy fails loudly instead of signing sessions with a
+// publicly-known key (which would allow session forgery).
+const authSecret =
+  process.env.AUTH_SECRET ??
+  (process.env.NODE_ENV === "production"
+    ? undefined
+    : "campuswell-dev-secret-key")
+
+if (!authSecret) {
+  throw new Error(
+    "AUTH_SECRET environment variable is required in production. Generate one with `openssl rand -base64 32`."
+  )
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
@@ -38,7 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
-  secret: process.env.AUTH_SECRET || process.env.SESSION_SECRET || "campuswell-dev-secret-key",
+  secret: authSecret,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
