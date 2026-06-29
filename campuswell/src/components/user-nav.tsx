@@ -24,7 +24,7 @@ function getInitials(name: string | null | undefined): string {
 export function UserNav() {
   const { data: session } = useSession()
   const user = session?.user
-  const avatarUrl = (user as any)?.avatarUrl as string | undefined
+  const avatarUrl = user?.avatarUrl ?? undefined
 
   return (
     <DropdownMenu>
