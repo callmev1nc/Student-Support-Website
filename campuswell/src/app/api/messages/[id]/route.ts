@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -7,13 +7,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user) {
+    const user = await getSessionUser()
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { id } = await params
-    const userId = (session.user as Record<string, unknown>).id as string
+    const userId = user.id
 
     const conversation = await prisma.conversation.findUnique({
       where: { id },

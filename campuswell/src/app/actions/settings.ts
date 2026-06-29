@@ -1,15 +1,12 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 
 export async function updateProfile(formData: FormData) {
-  const session = await auth()
-  if (!session?.user) return { error: "Not authenticated" }
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
   const name = formData.get("name") as string
   const bio = formData.get("bio") as string
   const avatarUrl = formData.get("avatarUrl") as string
@@ -31,10 +28,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function changePassword(formData: FormData) {
-  const session = await auth()
-  if (!session?.user) return { error: "Not authenticated" }
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
   const currentPassword = formData.get("currentPassword") as string
   const newPassword = formData.get("newPassword") as string
   const confirmPassword = formData.get("confirmPassword") as string

@@ -30,7 +30,7 @@ export default function ChatPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const conversationId = params.id as string
-  const userId = (session?.user as Record<string, unknown>)?.id as string
+  const userId = session?.user?.id ?? ""
 
   const [conversation, setConversation] = useState<ConversationData | null>(null)
   const [newMessage, setNewMessage] = useState("")

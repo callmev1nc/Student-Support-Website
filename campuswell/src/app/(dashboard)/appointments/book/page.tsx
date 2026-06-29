@@ -1,16 +1,10 @@
-import { auth } from '@/lib/auth'
+import { requireUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { BookingWizard } from './booking-wizard'
+import { BookingWizard } from './booking-wizard-wrapper'
 
 export default async function BookAppointmentPage() {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const role = (session.user as Record<string, unknown>).role as string
+  const { role } = await requireUser()
 
   if (role !== 'STUDENT') {
     redirect('/appointments')

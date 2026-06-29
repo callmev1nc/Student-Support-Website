@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { requireRole } from "@/lib/session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -11,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Ticket, CheckCircle2, Clock, Users, BarChart3 } from "lucide-react"
-import { AnalyticsCharts } from "@/components/analytics-charts"
+import { AnalyticsCharts } from "@/components/analytics-charts-wrapper"
 
 // Demo data for charts
 const monthlyTickets = [
@@ -40,11 +39,7 @@ const staffWorkload = [
 ]
 
 export default async function AnalyticsPage() {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
-
-  const role = (session.user as Record<string, unknown>).role as string
-  if (role !== "ADMIN") redirect("/")
+  await requireRole("ADMIN")
 
   return (
     <div className="space-y-6">

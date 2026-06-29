@@ -13,11 +13,11 @@ import { User, Lock, Save } from "lucide-react"
 
 export default function SettingsPage() {
   const { data: session } = useSession()
-  const user = session?.user as Record<string, unknown> | undefined
+  const user = session?.user
 
-  const [name, setName] = useState((user?.name as string) || "")
-  const [bio, setBio] = useState((user?.bio as string) || "")
-  const [avatarUrl, setAvatarUrl] = useState((user?.avatarUrl as string) || "")
+  const [name, setName] = useState(user?.name ?? "")
+  const [bio, setBio] = useState("")
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? "")
   const [saving, setSaving] = useState(false)
 
   const [currentPassword, setCurrentPassword] = useState("")
@@ -107,7 +107,7 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" value={(user?.email as string) || ""} disabled className="bg-muted" />
+              <Input id="email" value={user?.email ?? ""} disabled className="bg-muted" />
               <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
             <div className="space-y-2">

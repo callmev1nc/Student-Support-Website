@@ -1,15 +1,12 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/session"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
 export async function sendMessage(formData: FormData) {
-  const session = await auth()
-  if (!session?.user) return
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
   const conversationId = formData.get("conversationId") as string
   const content = formData.get("content") as string
 
@@ -62,10 +59,7 @@ export async function sendMessage(formData: FormData) {
 }
 
 export async function markMessagesAsRead(conversationId: string) {
-  const session = await auth()
-  if (!session?.user) return
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
 
   await prisma.message.updateMany({
     where: {
@@ -81,10 +75,7 @@ export async function markMessagesAsRead(conversationId: string) {
 }
 
 export async function startConversation(formData: FormData) {
-  const session = await auth()
-  if (!session?.user) return redirect("/messages")
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
   const recipientId = formData.get("recipientId") as string
   const content = formData.get("content") as string
 

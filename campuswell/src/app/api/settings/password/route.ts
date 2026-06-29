@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
-    if (!session?.user) {
+    const sessionUser = await getSessionUser()
+    if (!sessionUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = (session.user as Record<string, unknown>).id as string
+    const userId = sessionUser.id
     const formData = await request.formData()
     const currentPassword = formData.get("currentPassword") as string
     const newPassword = formData.get("newPassword") as string
@@ -28,10 +28,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+    const dbUser = await prisma.user.findUnique({ where: { id: userId } })
+    if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
-    const isValid = await bcrypt.compare(currentPassword, user.passwordHash)
+    const isValid = await bcrypt.compare(currentPassword, dbUser.passwordHash)
     if (!isValid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 })
     }

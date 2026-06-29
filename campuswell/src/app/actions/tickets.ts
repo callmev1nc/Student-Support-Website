@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import type { TicketCategory, TicketPriority, TicketStatus, NotificationType } from '@/generated/prisma/enums'
-import { auth } from '@/lib/auth'
+import { requireUser, requireRole } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -10,14 +10,7 @@ import { revalidatePath } from 'next/cache'
 // Create a new support ticket
 // ---------------------------------------------------------------------------
 export async function createTicket(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+  const { userId, role } = await requireUser()
 
   const subject = (formData.get('subject') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
@@ -86,17 +79,7 @@ export async function createTicket(formData: FormData) {
 // Update ticket status (staff / admin only)
 // ---------------------------------------------------------------------------
 export async function updateTicketStatus(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const role = (session.user as Record<string, unknown>).role as string
-
-  if (role !== 'STAFF' && role !== 'ADMIN') {
-    throw new Error('You do not have permission to update ticket status.')
-  }
+  await requireRole('STAFF', 'ADMIN')
 
   const ticketId = formData.get('ticketId') as string
   const status = formData.get('status') as string
@@ -140,18 +123,7 @@ export async function updateTicketStatus(formData: FormData) {
 // Assign a ticket to a staff member (staff / admin only)
 // ---------------------------------------------------------------------------
 export async function assignTicket(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const role = (session.user as Record<string, unknown>).role as string
-  const userId = (session.user as Record<string, unknown>).id as string
-
-  if (role !== 'STAFF' && role !== 'ADMIN') {
-    throw new Error('You do not have permission to assign tickets.')
-  }
+  const { userId } = await requireRole('STAFF', 'ADMIN')
 
   const ticketId = formData.get('ticketId') as string
   const assignToId = (formData.get('assignToId') as string) || userId
@@ -197,14 +169,7 @@ export async function assignTicket(formData: FormData) {
 // Add a comment to a ticket
 // ---------------------------------------------------------------------------
 export async function addComment(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+  const { userId, role } = await requireUser()
 
   const ticketId = formData.get('ticketId') as string
   const content = (formData.get('content') as string)?.trim()
@@ -278,14 +243,7 @@ export async function addComment(formData: FormData) {
 // Close a ticket (student owner, staff, or admin)
 // ---------------------------------------------------------------------------
 export async function closeTicket(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+  const { userId, role } = await requireUser()
 
   const ticketId = formData.get('ticketId') as string
 

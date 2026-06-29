@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user) return NextResponse.json({ notifications: [] })
+    const user = await getSessionUser()
+    if (!user) return NextResponse.json({ notifications: [] })
 
-    const userId = (session.user as Record<string, unknown>).id as string
+    const userId = user.id
 
     const notifications = await prisma.notification.findMany({
       where: { userId },

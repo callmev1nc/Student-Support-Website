@@ -1,17 +1,9 @@
-import { auth } from '@/lib/auth'
+import { requireUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
 import { TicketList } from './tickets-client'
 
 export default async function TicketsPage() {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+  const { userId, role } = await requireUser()
 
   // Fetch tickets based on role
   const where =

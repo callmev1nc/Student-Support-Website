@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import type { Role } from "@/generated/prisma/enums"
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user) {
+    const user = await getSessionUser()
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = (session.user as Record<string, unknown>).id as string
-    const role = (session.user as Record<string, unknown>).role as string
+    const { id: userId, role } = user
 
     const where = role === "STUDENT"
       ? { role: { in: ["STAFF", "ADMIN"] as Role[] } }
