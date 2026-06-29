@@ -1,6 +1,6 @@
-import { auth } from '@/lib/auth'
+import { requireUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,14 +45,7 @@ export default async function TicketDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  const userId = (session.user as Record<string, unknown>).id as string
-  const role = (session.user as Record<string, unknown>).role as string
+  const { userId, role } = await requireUser()
   const { id } = await params
 
   // Fetch ticket with relations

@@ -1,6 +1,5 @@
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,10 +8,7 @@ import { formatDistanceToNow } from "date-fns"
 import { toast } from "sonner"
 
 export default async function AnnouncementsPage() {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
-
-  const role = (session.user as Record<string, unknown>).role as string
+  const { role } = await requireUser()
 
   const announcements = await prisma.announcement.findMany({
     orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],

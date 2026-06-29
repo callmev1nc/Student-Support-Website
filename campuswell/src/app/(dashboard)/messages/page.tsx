@@ -1,6 +1,5 @@
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,10 +9,7 @@ import { MessageSquare, Plus } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 export default async function MessagesPage() {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
 
   const conversations = await prisma.conversation.findMany({
     where: {

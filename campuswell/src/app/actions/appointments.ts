@@ -1,27 +1,15 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { requireUser, requireRole } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-function getSessionUser() {
-  return auth().then((session) => {
-    if (!session?.user) redirect('/login')
-    const userId = (session.user as Record<string, unknown>).id as string
-    const role = (session.user as Record<string, unknown>).role as string
-    return { session, userId, role }
-  })
-}
 
 // ---------------------------------------------------------------------------
 // Book a new appointment (student only)
 // ---------------------------------------------------------------------------
 export async function bookAppointment(formData: FormData) {
-  const { userId, role } = await getSessionUser()
+  const { userId, role } = await requireUser()
 
   if (role !== 'STUDENT') {
     throw new Error('Only students can book appointments.')
@@ -114,7 +102,7 @@ export async function bookAppointment(formData: FormData) {
 // Confirm a pending appointment (staff only)
 // ---------------------------------------------------------------------------
 export async function confirmAppointment(formData: FormData) {
-  const { userId, role } = await getSessionUser()
+  const { userId, role } = await requireUser()
 
   if (role !== 'STAFF' && role !== 'ADMIN') {
     throw new Error('Only staff can confirm appointments.')
@@ -167,7 +155,7 @@ export async function confirmAppointment(formData: FormData) {
 // Cancel an appointment (student owner or assigned staff or admin)
 // ---------------------------------------------------------------------------
 export async function cancelAppointment(formData: FormData) {
-  const { userId, role } = await getSessionUser()
+  const { userId, role } = await requireUser()
 
   const appointmentId = formData.get('appointmentId') as string
 
@@ -241,11 +229,7 @@ export async function cancelAppointment(formData: FormData) {
 // Mark appointment as completed (staff only)
 // ---------------------------------------------------------------------------
 export async function completeAppointment(formData: FormData) {
-  const { userId, role } = await getSessionUser()
-
-  if (role !== 'STAFF' && role !== 'ADMIN') {
-    throw new Error('Only staff can mark appointments as completed.')
-  }
+  const { userId, role } = await requireRole('STAFF', 'ADMIN')
 
   const appointmentId = formData.get('appointmentId') as string
 
@@ -294,7 +278,7 @@ export async function completeAppointment(formData: FormData) {
 // Reschedule an appointment (student only: cancel + rebook)
 // ---------------------------------------------------------------------------
 export async function rescheduleAppointment(formData: FormData) {
-  const { userId, role } = await getSessionUser()
+  const { userId, role } = await requireUser()
 
   if (role !== 'STUDENT') {
     throw new Error('Only students can reschedule appointments.')

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-// Simple cookie-based auth check for proxy
-// (Prisma can't run in Edge Runtime, so we check JWT cookie existence)
+// Next.js 16 renamed the `middleware` file convention to `proxy` (v16.0.0).
+// See node_modules/next/dist/docs/.../file-conventions/proxy.md and AGENTS.md.
 export function proxy(request: NextRequest) {
   const sessionToken =
     request.cookies.get("authjs.session-token")?.value ||
@@ -10,7 +10,6 @@ export function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Public paths that don't require auth
   const publicPaths = ["/login", "/register"]
   const isPublic = publicPaths.some((p) => pathname.startsWith(p))
 

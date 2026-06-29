@@ -1,14 +1,11 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export async function markAllAsRead() {
-  const session = await auth()
-  if (!session?.user) return
-
-  const userId = (session.user as Record<string, unknown>).id as string
+  const { userId } = await requireUser()
 
   await prisma.notification.updateMany({
     where: { userId, read: false },
@@ -19,11 +16,10 @@ export async function markAllAsRead() {
 }
 
 export async function markAsRead(notificationId: string) {
-  const session = await auth()
-  if (!session?.user) return
+  const { userId } = await requireUser()
 
   await prisma.notification.update({
-    where: { id: notificationId },
+    where: { id: notificationId, userId },
     data: { read: true },
   })
 
