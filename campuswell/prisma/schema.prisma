@@ -76,6 +76,7 @@ model User {
   notifications     Notification[]
   authoredAnnouncements Announcement[]
   authoredResources     Resource[]
+  moodEntries           MoodEntry[]
 
   @@map("users")
 }
@@ -219,4 +220,21 @@ model Resource {
   author   User     @relation(fields: [authorId], references: [id])
 
   @@map("resources")
+}
+
+// One mood check-in per user per day (UTC). dayKey is midnight UTC and carries
+// the @@unique pair so the action can upsert today's entry cleanly.
+model MoodEntry {
+  id        String   @id @default(cuid())
+  score     Int
+  note      String?
+  dayKey    DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayKey])
+  @@index([userId, createdAt])
+  @@map("mood_entries")
 }

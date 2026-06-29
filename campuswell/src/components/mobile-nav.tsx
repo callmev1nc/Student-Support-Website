@@ -29,6 +29,7 @@ import {
   LogOut,
   Menu,
   GraduationCap,
+  HeartPulse,
 } from 'lucide-react'
 
 type NavItem = {
@@ -47,6 +48,7 @@ const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Appointments', href: '/appointments', icon: CalendarDays },
     { label: 'Messages', href: '/messages', icon: MessageSquare },
     { label: 'Resources', href: '/resources', icon: BookOpen },
+    { label: 'Wellbeing', href: '/wellbeing', icon: HeartPulse },
     { label: 'Announcements', href: '/announcements', icon: Megaphone },
   ],
   STAFF: [
