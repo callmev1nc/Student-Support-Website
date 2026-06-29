@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS events (
-    event_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    event_title VARCHAR(100) NOT NULL,
-    event_type VARCHAR(50),
-    event_description TEXT,
-    event_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE
-);
