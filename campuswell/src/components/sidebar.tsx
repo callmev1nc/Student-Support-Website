@@ -46,6 +46,7 @@ const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Support Tickets', href: '/tickets', icon: Ticket },
     { label: 'Appointments', href: '/appointments', icon: CalendarDays },
     { label: 'Messages', href: '/messages', icon: MessageSquare },
+    { label: 'Study', href: '/study', icon: GraduationCap },
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Wellbeing', href: '/wellbeing', icon: HeartPulse },
     { label: 'Announcements', href: '/announcements', icon: Megaphone },

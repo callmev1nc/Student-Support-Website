@@ -15,6 +15,7 @@ import {
   CalendarPlus,
   Send,
   Clock,
+  ListTodo,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -23,7 +24,11 @@ export default async function DashboardPage() {
   const { userId, role } = session
 
   // --- Fetch stats based on role ---
-  const [openTickets, resolvedTickets, upcomingAppointments, unreadMessages] =
+  const todayStart = new Date()
+  todayStart.setUTCHours(0, 0, 0, 0)
+  const todayEnd = new Date(todayStart.getTime() + 86_400_000)
+
+  const [openTickets, resolvedTickets, upcomingAppointments, unreadMessages, dueTodayTasks] =
     await Promise.all([
       // Open tickets count
       prisma.ticket.count({
@@ -69,6 +74,17 @@ export default async function DashboardPage() {
           },
         },
       }),
+
+      // Due today study tasks (students only)
+      role === 'STUDENT'
+        ? prisma.studyTask.count({
+            where: {
+              userId,
+              dueAt: { gte: todayStart, lt: todayEnd },
+              status: { in: ['TODO', 'IN_PROGRESS'] },
+            },
+          })
+        : Promise.resolve(0),
     ])
 
   // --- Recent tickets ---
@@ -141,6 +157,13 @@ export default async function DashboardPage() {
           label="Unread Messages"
           value={unreadMessages}
         />
+        {role === 'STUDENT' && (
+          <StatCard
+            icon={ListTodo}
+            label="Due Today"
+            value={dueTodayTasks}
+          />
+        )}
       </div>
 
       {/* Quick actions */}

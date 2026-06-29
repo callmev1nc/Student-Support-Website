@@ -52,6 +52,33 @@ enum NotificationType {
   APPOINTMENT
   MESSAGE
   ANNOUNCEMENT
+  FORUM
+  GROUP
+  MENTORSHIP
+  QUESTION
+  ASSISTANT
+}
+
+enum StudyTaskCategory {
+  HOMEWORK
+  ASSIGNMENT
+  QUIZ
+  EXAM_PREP
+  READING
+  PROJECT
+  OTHER
+}
+
+enum StudyTaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum FocusMode {
+  POMODORO
+  SHORT_BREAK
+  LONG_BREAK
 }
 
 model User {
@@ -77,6 +104,10 @@ model User {
   authoredAnnouncements Announcement[]
   authoredResources     Resource[]
   moodEntries           MoodEntry[]
+  courses               Course[]
+  grades                Grade[]
+  studyTasks            StudyTask[]
+  focusSessions         FocusSession[]
 
   @@map("users")
 }
@@ -237,4 +268,74 @@ model MoodEntry {
   @@unique([userId, dayKey])
   @@index([userId, createdAt])
   @@map("mood_entries")
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  code      String
+  name      String
+  credits   Int      @default(10)
+  term      String?
+  color     String?
+  archived  Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grades    Grade[]
+  tasks     StudyTask[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("courses")
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  name      String
+  score     Decimal  @db.Decimal(5,2)
+  maxScore  Decimal  @db.Decimal(5,2) @default(100)
+  weight    Decimal? @db.Decimal(5,2)
+  gradedAt  DateTime?
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@map("grades")
+}
+
+model StudyTask {
+  id            String            @id @default(cuid())
+  title         String
+  description   String?
+  category      StudyTaskCategory @default(HOMEWORK)
+  priority      TicketPriority    @default(MEDIUM)
+  status        StudyTaskStatus   @default(TODO)
+  dueAt         DateTime?
+  completedAt   DateTime?
+  reminderAt    DateTime?
+  courseId      String?
+  course        Course?           @relation(fields: [courseId], references: [id])
+  focusSessions FocusSession[]   @relation("TaskFocusSessions")
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  @@index([userId, status])
+  @@index([userId, dueAt])
+  @@map("study_tasks")
+}
+
+model FocusSession {
+  id              String     @id @default(cuid())
+  startedAt       DateTime
+  endedAt         DateTime
+  durationSeconds Int
+  mode            FocusMode  @default(POMODORO)
+  completed       Boolean    @default(false)
+  taskId          String?
+  task            StudyTask? @relation("TaskFocusSessions", fields: [taskId], references: [id])
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime   @default(now())
+  @@index([userId, startedAt])
+  @@map("focus_sessions")
 }

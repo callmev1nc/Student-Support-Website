@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { PrismaClient, Role, TicketCategory, TicketPriority, TicketStatus, AppointmentStatus, NotificationType } from "../src/generated/prisma/client"
+import { PrismaClient, Role, TicketCategory, TicketPriority, TicketStatus, AppointmentStatus, NotificationType, StudyTaskCategory, StudyTaskStatus, FocusMode } from "../src/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import bcrypt from "bcryptjs"
 
@@ -551,6 +551,62 @@ async function main() {
   }
   console.log(`  ✅ Created ${resources.length} resources`)
 
+  // ── Courses ────────────────────────────────────────────
+  const courses = [
+    { code: "COMP3028", name: "Web Development", credits: 10, term: "2025 Semester 1", color: "#C8102E", userId: vinh.id },
+    { code: "COMP3015", name: "Database Systems", credits: 10, term: "2025 Semester 1", color: "#2563EB", userId: vinh.id },
+    { code: "MATH2001", name: "Linear Algebra", credits: 10, term: "2025 Semester 1", color: "#7C3AED", userId: vinh.id },
+  ]
+
+  const createdCourses = []
+  for (const course of courses) {
+    const c = await prisma.course.create({ data: course })
+    createdCourses.push(c)
+  }
+  console.log(`  ✅ Created ${createdCourses.length} courses`)
+
+  // ── Grades ─────────────────────────────────────────────
+  const grades = [
+    { name: "Assignment 1", score: 85, maxScore: 100, weight: 20, courseId: createdCourses[0].id, userId: vinh.id },
+    { name: "Midterm Exam", score: 72, maxScore: 100, weight: 30, courseId: createdCourses[0].id, userId: vinh.id },
+    { name: "Final Project", score: 91, maxScore: 100, weight: 50, courseId: createdCourses[0].id, userId: vinh.id },
+    { name: "Quiz 1", score: 18, maxScore: 20, weight: 15, courseId: createdCourses[1].id, userId: vinh.id },
+    { name: "Midterm", score: 65, maxScore: 100, weight: 35, courseId: createdCourses[1].id, userId: vinh.id },
+    { name: "Assignment 1", score: 42, maxScore: 50, weight: 20, courseId: createdCourses[2].id, userId: vinh.id },
+  ]
+
+  for (const grade of grades) {
+    await prisma.grade.create({ data: { ...grade } })
+  }
+  console.log(`  ✅ Created ${grades.length} grades`)
+
+  // ── Study Tasks ────────────────────────────────────────
+  const taskEntries = [
+    { title: "Complete COMP3028 final project", description: "Build the frontend components for the restaurant booking system", category: "PROJECT" as StudyTaskCategory, priority: "HIGH" as TicketPriority, status: "IN_PROGRESS" as StudyTaskStatus, dueAt: hoursFromNow(72), courseId: createdCourses[0].id, userId: vinh.id },
+    { title: "Study for Database Systems midterm", description: "Review normalization, SQL queries, and ER diagrams", category: "EXAM_PREP" as StudyTaskCategory, priority: "HIGH" as TicketPriority, status: "TODO" as StudyTaskStatus, dueAt: hoursFromNow(120), courseId: createdCourses[1].id, userId: vinh.id },
+    { title: "Linear Algebra problem set", description: "Complete exercises 5.1-5.4 from the textbook", category: "HOMEWORK" as StudyTaskCategory, priority: "MEDIUM" as TicketPriority, status: "TODO" as StudyTaskStatus, dueAt: hoursFromNow(48), courseId: createdCourses[2].id, userId: vinh.id },
+    { title: "Read research paper for seminar", description: "Read and annotate the paper on distributed systems", category: "READING" as StudyTaskCategory, priority: "LOW" as TicketPriority, status: "DONE" as StudyTaskStatus, dueAt: hoursFromNow(-24), completedAt: daysAgo(1), courseId: null, userId: vinh.id },
+  ]
+
+  for (const task of taskEntries) {
+    await prisma.studyTask.create({ data: task })
+  }
+  console.log(`  ✅ Created ${taskEntries.length} study tasks`)
+
+  // ── Focus Sessions ─────────────────────────────────────
+  const sessions = [
+    { startedAt: daysAgo(6), endedAt: new Date(daysAgo(6).getTime() + 25 * 60 * 1000), durationSeconds: 1500, mode: "POMODORO" as FocusMode, completed: true, userId: vinh.id },
+    { startedAt: daysAgo(5), endedAt: new Date(daysAgo(5).getTime() + 25 * 60 * 1000), durationSeconds: 1500, mode: "POMODORO" as FocusMode, completed: true, userId: vinh.id },
+    { startedAt: daysAgo(5), endedAt: new Date(daysAgo(5).getTime() + 25 * 60 * 1000), durationSeconds: 1500, mode: "POMODORO" as FocusMode, completed: true, userId: vinh.id },
+    { startedAt: daysAgo(3), endedAt: new Date(daysAgo(3).getTime() + 50 * 60 * 1000), durationSeconds: 3000, mode: "POMODORO" as FocusMode, completed: true, userId: vinh.id },
+    { startedAt: daysAgo(1), endedAt: new Date(daysAgo(1).getTime() + 25 * 60 * 1000), durationSeconds: 1500, mode: "POMODORO" as FocusMode, completed: true, userId: vinh.id },
+  ]
+
+  for (const session of sessions) {
+    await prisma.focusSession.create({ data: session })
+  }
+  console.log(`  ✅ Created ${sessions.length} focus sessions`)
+
   console.log("\n🎉 Seeding complete!")
   console.log("  📊 Summary:")
   console.log("    - 10 users (1 admin, 3 staff, 6 students)")
@@ -561,6 +617,10 @@ async function main() {
   console.log("    - 15 notifications")
   console.log("    - 4 announcements")
   console.log("    - 10 resources")
+  console.log("    - 3 courses")
+  console.log("    - 6 grades")
+  console.log("    - 4 study tasks")
+  console.log("    - 5 focus sessions")
   console.log("\n  🔑 Demo Accounts:")
   console.log("    Admin:  admin@campuswell.edu / admin123")
   console.log("    Staff:  dr.smith@campuswell.edu / staff123")

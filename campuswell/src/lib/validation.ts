@@ -108,6 +108,55 @@ export function parseForm<T>(schema: z.ZodType<T>, formData: FormData): T {
   return result.data
 }
 
+// ── Study / Academic schemas ────────────────────────────────────────────────
+
+export const createStudyTaskSchema = z.object({
+  title: z.string().trim().min(3, 'Title must be at least 3 characters long.'),
+  description: z.string().trim().optional(),
+  category: z.enum(['HOMEWORK', 'ASSIGNMENT', 'QUIZ', 'EXAM_PREP', 'READING', 'PROJECT', 'OTHER']),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  dueAt: z.coerce.date().optional(),
+  courseId: z.string().optional(),
+})
+
+export const updateStudyTaskSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().trim().min(3, 'Title must be at least 3 characters long.'),
+  description: z.string().trim().optional().nullable(),
+  category: z.enum(['HOMEWORK', 'ASSIGNMENT', 'QUIZ', 'EXAM_PREP', 'READING', 'PROJECT', 'OTHER']),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  dueAt: z.coerce.date().optional().nullable(),
+  courseId: z.string().optional().nullable(),
+})
+
+export const createCourseSchema = z.object({
+  code: z.string().trim().min(2, 'Course code must be at least 2 characters long.'),
+  name: z.string().trim().min(2, 'Course name must be at least 2 characters long.'),
+  credits: z.coerce.number().int().min(1).max(20),
+  term: z.string().trim().optional(),
+  color: z.string().trim().optional(),
+})
+
+export const createGradeSchema = z.object({
+  name: z.string().trim().min(2, 'Grade name must be at least 2 characters long.'),
+  score: z.coerce.number().min(0, 'Score must be a positive number.'),
+  maxScore: z.coerce.number().min(1, 'Max score must be at least 1.').default(100),
+  weight: z.coerce.number().min(0).max(100).optional(),
+  courseId: z.string().min(1, 'Please select a course.'),
+}).refine((d) => d.score <= d.maxScore, {
+  message: 'Score cannot exceed max score.',
+  path: ['score'],
+})
+
+export const saveFocusSessionSchema = z.object({
+  startedAt: z.coerce.date(),
+  endedAt: z.coerce.date(),
+  durationSeconds: z.coerce.number().int().min(1).max(7200),
+  mode: z.enum(['POMODORO', 'SHORT_BREAK', 'LONG_BREAK']),
+  completed: z.boolean().default(true),
+  taskId: z.string().optional().nullable(),
+})
+
 /** First human-readable error message from a failed safeParse, for JSON 400s. */
 export function firstZodError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Invalid input.'
