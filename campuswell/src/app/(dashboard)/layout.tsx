@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { SeedDataBanner } from "@/components/seed-data-banner"
+import { CrisisBanner } from "@/components/crisis-banner"
 import { Sidebar } from "@/components/sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { NotificationBell } from "@/components/notification-bell"
@@ -46,6 +47,9 @@ export default function DashboardLayout({
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Seed data banner */}
         <SeedDataBanner />
+
+        {/* Always-visible wellbeing safety banner */}
+        <CrisisBanner />
 
         {/* Top bar */}
         <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-white px-4 dark:bg-slate-900">
