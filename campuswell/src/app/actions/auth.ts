@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import type { Role } from "@/generated/prisma/enums"
+import { registerSchema } from "@/lib/validation"
 
 export type RegisterState = {
   error?: string
@@ -15,32 +16,11 @@ export async function registerAction(
   _prevState: RegisterState,
   formData: FormData,
 ): Promise<RegisterState> {
-  const name = formData.get("name") as string
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const confirmPassword = formData.get("confirmPassword") as string
-  const role = formData.get("role") as string
-
-  // --- Validation ---
-  if (!name || name.trim().length < 2) {
-    return { error: "Name must be at least 2 characters long." }
+  const parsed = registerSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." }
   }
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { error: "Please enter a valid email address." }
-  }
-
-  if (!password || password.length < 6) {
-    return { error: "Password must be at least 6 characters long." }
-  }
-
-  if (password !== confirmPassword) {
-    return { error: "Passwords do not match." }
-  }
-
-  if (!role || !["STUDENT", "STAFF"].includes(role)) {
-    return { error: "Please select a valid role." }
-  }
+  const { name, email, password, role } = parsed.data
 
   // --- Check email uniqueness ---
   const existingUser = await prisma.user.findUnique({

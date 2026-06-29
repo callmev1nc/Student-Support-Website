@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { passwordChangeSchema } from "@/lib/validation"
 
 export async function POST(request: Request) {
   try {
@@ -12,21 +13,11 @@ export async function POST(request: Request) {
 
     const userId = sessionUser.id
     const formData = await request.formData()
-    const currentPassword = formData.get("currentPassword") as string
-    const newPassword = formData.get("newPassword") as string
-    const confirmPassword = formData.get("confirmPassword") as string
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
+    const parsed = passwordChangeSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 })
     }
-
-    if (newPassword !== confirmPassword) {
-      return NextResponse.json({ error: "New passwords do not match" }, { status: 400 })
-    }
-
-    if (newPassword.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
-    }
+    const { currentPassword, newPassword } = parsed.data
 
     const dbUser = await prisma.user.findUnique({ where: { id: userId } })
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 })

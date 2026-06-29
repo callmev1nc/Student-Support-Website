@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
+import { messageStartSchema } from "@/lib/validation"
 
 export async function POST(request: Request) {
   try {
@@ -11,12 +12,11 @@ export async function POST(request: Request) {
 
     const userId = user.id
     const formData = await request.formData()
-    const recipientId = formData.get("recipientId") as string
-    const content = formData.get("content") as string
-
-    if (!recipientId || !content?.trim()) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 })
+    const parsed = messageStartSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 })
     }
+    const { recipientId, content } = parsed.data
 
     const [participantAId, participantBId] =
       userId < recipientId ? [userId, recipientId] : [recipientId, userId]

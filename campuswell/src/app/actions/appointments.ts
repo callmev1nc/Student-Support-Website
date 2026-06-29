@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { requireUser, requireRole } from '@/lib/session'
+import { bookAppointmentSchema, rescheduleAppointmentSchema, parseForm } from '@/lib/validation'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -15,32 +16,8 @@ export async function bookAppointment(formData: FormData) {
     throw new Error('Only students can book appointments.')
   }
 
-  const staffId = (formData.get('staffId') as string)?.trim()
-  const scheduledAt = formData.get('scheduledAt') as string
-  const title = (formData.get('title') as string)?.trim()
-  const description = (formData.get('description') as string)?.trim() || null
-
-  if (!staffId) {
-    throw new Error('Please select a staff member.')
-  }
-
-  if (!scheduledAt) {
-    throw new Error('Please select a date and time.')
-  }
-
-  const scheduledDate = new Date(scheduledAt)
-
-  if (isNaN(scheduledDate.getTime())) {
-    throw new Error('Invalid date and time.')
-  }
-
-  if (scheduledDate <= new Date()) {
-    throw new Error('Appointment must be scheduled in the future.')
-  }
-
-  if (!title || title.length < 3) {
-    throw new Error('Title must be at least 3 characters long.')
-  }
+  const { staffId, scheduledAt: scheduledDate, title, description: rawDescription } = parseForm(bookAppointmentSchema, formData)
+  const description = rawDescription || null
 
   // Verify the staff member exists and has the STAFF role
   const staffUser = await prisma.user.findUnique({
@@ -284,22 +261,7 @@ export async function rescheduleAppointment(formData: FormData) {
     throw new Error('Only students can reschedule appointments.')
   }
 
-  const appointmentId = formData.get('appointmentId') as string
-  const newScheduledAt = formData.get('newScheduledAt') as string
-
-  if (!newScheduledAt) {
-    throw new Error('Please select a new date and time.')
-  }
-
-  const newDate = new Date(newScheduledAt)
-
-  if (isNaN(newDate.getTime())) {
-    throw new Error('Invalid date and time.')
-  }
-
-  if (newDate <= new Date()) {
-    throw new Error('Appointment must be scheduled in the future.')
-  }
+  const { appointmentId, newScheduledAt: newDate } = parseForm(rescheduleAppointmentSchema, formData)
 
   const existing = await prisma.appointment.findUnique({
     where: { id: appointmentId },
