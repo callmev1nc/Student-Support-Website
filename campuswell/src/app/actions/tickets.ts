@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma'
 import type { TicketCategory, TicketPriority, TicketStatus, NotificationType } from '@/generated/prisma/enums'
 import { requireUser, requireRole } from '@/lib/session'
+import { createTicketSchema, updateTicketStatusSchema, addCommentSchema, parseForm } from '@/lib/validation'
+import { rateLimit } from '@/lib/rate-limit'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -12,36 +14,12 @@ import { revalidatePath } from 'next/cache'
 export async function createTicket(formData: FormData) {
   const { userId, role } = await requireUser()
 
-  const subject = (formData.get('subject') as string)?.trim()
-  const description = (formData.get('description') as string)?.trim()
-  const category = formData.get('category') as string
-  const priority = formData.get('priority') as string
-
-  if (!subject || subject.length < 3) {
-    throw new Error('Subject must be at least 3 characters long.')
+  const ticketLimit = rateLimit({ key: `ticket:${userId}`, limit: 10, windowMs: 60_000 })
+  if (!ticketLimit.ok) {
+    throw new Error("You're creating tickets too quickly. Please wait a moment.")
   }
 
-  if (!description || description.length < 10) {
-    throw new Error('Description must be at least 10 characters long.')
-  }
-
-  const validCategories = [
-    'ACADEMIC',
-    'MENTAL_HEALTH',
-    'TECHNICAL',
-    'BULLYING',
-    'ATTENDANCE',
-    'FINANCIAL',
-    'GENERAL',
-  ]
-  const validPriorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
-
-  if (!validCategories.includes(category)) {
-    throw new Error('Invalid category.')
-  }
-  if (!validPriorities.includes(priority)) {
-    throw new Error('Invalid priority.')
-  }
+  const { subject, description, category, priority } = parseForm(createTicketSchema, formData)
 
   const ticket = await prisma.ticket.create({
     data: {
@@ -81,22 +59,7 @@ export async function createTicket(formData: FormData) {
 export async function updateTicketStatus(formData: FormData) {
   await requireRole('STAFF', 'ADMIN')
 
-  const ticketId = formData.get('ticketId') as string
-  const status = formData.get('status') as string
-
-  const validStatuses = [
-    'NEW',
-    'IN_REVIEW',
-    'ASSIGNED',
-    'IN_PROGRESS',
-    'WAITING',
-    'RESOLVED',
-    'CLOSED',
-  ]
-
-  if (!validStatuses.includes(status)) {
-    throw new Error('Invalid status.')
-  }
+  const { ticketId, status } = parseForm(updateTicketStatusSchema, formData)
 
   const ticket = await prisma.ticket.update({
     where: { id: ticketId },
@@ -171,12 +134,7 @@ export async function assignTicket(formData: FormData) {
 export async function addComment(formData: FormData) {
   const { userId, role } = await requireUser()
 
-  const ticketId = formData.get('ticketId') as string
-  const content = (formData.get('content') as string)?.trim()
-
-  if (!content || content.length < 1) {
-    throw new Error('Comment cannot be empty.')
-  }
+  const { ticketId, content } = parseForm(addCommentSchema, formData)
 
   // Verify the user has access to this ticket
   const ticket = await prisma.ticket.findUnique({
