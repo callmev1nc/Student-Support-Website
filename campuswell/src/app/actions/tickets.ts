@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import type { TicketCategory, TicketPriority, TicketStatus, NotificationType } from '@/generated/prisma/enums'
 import { requireUser, requireRole } from '@/lib/session'
 import { createTicketSchema, updateTicketStatusSchema, addCommentSchema, parseForm } from '@/lib/validation'
+import { rateLimit } from '@/lib/rate-limit'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -12,6 +13,11 @@ import { revalidatePath } from 'next/cache'
 // ---------------------------------------------------------------------------
 export async function createTicket(formData: FormData) {
   const { userId, role } = await requireUser()
+
+  const ticketLimit = rateLimit({ key: `ticket:${userId}`, limit: 10, windowMs: 60_000 })
+  if (!ticketLimit.ok) {
+    throw new Error("You're creating tickets too quickly. Please wait a moment.")
+  }
 
   const { subject, description, category, priority } = parseForm(createTicketSchema, formData)
 

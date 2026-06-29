@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { rateLimit } from "@/lib/rate-limit"
 
 // In production we require a real AUTH_SECRET. The static fallback is dev-only
 // so a misconfigured deploy fails loudly instead of signing sessions with a
@@ -27,6 +28,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        // Throttle credential brute-force. Keyed by lowercased email; in-memory
+        // and per-instance (see src/lib/rate-limit.ts). Over-budget returns null
+        // (indistinguishable from invalid credentials -> no user-existence leak).
+        const loginLimit = rateLimit({
+          key: `login:${String(credentials.email).toLowerCase()}`,
+          limit: 10,
+          windowMs: 10 * 60_000,
+        })
+        if (!loginLimit.ok) return null
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },

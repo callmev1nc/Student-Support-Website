@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { messageStartSchema } from "@/lib/validation"
+import { rateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,15 @@ export async function POST(request: Request) {
     }
 
     const userId = user.id
+
+    const startLimit = rateLimit({ key: `msg:start:${userId}`, limit: 20, windowMs: 60_000 })
+    if (!startLimit.ok) {
+      return NextResponse.json(
+        { error: "You're starting conversations too quickly. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(startLimit.retryAfterMs / 1000)) } },
+      )
+    }
+
     const formData = await request.formData()
     const parsed = messageStartSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {

@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { passwordChangeSchema } from "@/lib/validation"
+import { rateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +13,15 @@ export async function POST(request: Request) {
     }
 
     const userId = sessionUser.id
+
+    const pwdLimit = rateLimit({ key: `pwd:${userId}`, limit: 5, windowMs: 15 * 60_000 })
+    if (!pwdLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many password changes. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(pwdLimit.retryAfterMs / 1000)) } },
+      )
+    }
+
     const formData = await request.formData()
     const parsed = passwordChangeSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {
