@@ -211,3 +211,124 @@ export async function leaveStudyGroup(formData: FormData) {
   await prisma.groupMembership.deleteMany({ where: { groupId, userId } })
   revalidatePath('/community/groups')
 }
+
+// ── Mentorship matching ──────────────────────────────────────────────────────
+
+export async function requestMentorship(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const reqLimit = rateLimit({ key: `mentor:req:${userId}`, limit: 10, windowMs: 3_600_000 })
+  if (!reqLimit.ok) {
+    throw new Error('You are sending too many requests. Please wait a bit.')
+  }
+
+  const mentorId = formData.get('mentorId') as string
+  if (!mentorId) throw new Error('Mentor is required.')
+  if (mentorId === userId) throw new Error('You cannot request yourself as a mentor.')
+
+  const existing = await prisma.mentorshipMatch.findUnique({
+    where: { mentorId_menteeId: { mentorId, menteeId: userId } },
+  })
+  if (existing) {
+    if (existing.status === 'PENDING') throw new Error('Request already pending.')
+    if (existing.status === 'ACCEPTED') throw new Error('You already have an active mentorship with this person.')
+    // Past declined/ended — allow re-request by updating.
+    await prisma.mentorshipMatch.update({
+      where: { id: existing.id },
+      data: { status: 'PENDING', notes: null },
+    })
+    await notify([{
+      userId: mentorId,
+      title: 'New mentorship request',
+      message: 'A student has requested you as a mentor.',
+      type: 'MENTORSHIP',
+      link: '/community/mentors',
+    }])
+    revalidatePath('/community/mentors')
+    return
+  }
+
+  await prisma.mentorshipMatch.create({
+    data: { mentorId, menteeId: userId },
+  })
+
+  await notify([{
+    userId: mentorId,
+    title: 'New mentorship request',
+    message: 'A student has requested you as a mentor.',
+    type: 'MENTORSHIP',
+    link: '/community/mentors',
+  }])
+
+  revalidatePath('/community/mentors')
+}
+
+export async function respondToMentorship(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const matchId = formData.get('matchId') as string
+  const decision = formData.get('decision') as string // 'ACCEPTED' | 'DECLINED'
+
+  if (!matchId) throw new Error('Match ID is required.')
+  if (decision !== 'ACCEPTED' && decision !== 'DECLINED') {
+    throw new Error('Decision must be ACCEPTED or DECLINED.')
+  }
+
+  const match = await prisma.mentorshipMatch.findUnique({ where: { id: matchId } })
+  if (!match) throw new Error('Request not found.')
+  if (match.mentorId !== userId) throw new Error('Only the mentor can respond to this request.')
+  if (match.status !== 'PENDING') throw new Error('This request has already been responded to.')
+
+  await prisma.mentorshipMatch.update({
+    where: { id: matchId },
+    data: { status: decision },
+  })
+
+  if (decision === 'ACCEPTED') {
+    // Find-or-create a Conversation between mentor and mentee.
+    const [a, b] =
+      match.mentorId < match.menteeId
+        ? [match.mentorId, match.menteeId]
+        : [match.menteeId, match.mentorId]
+
+    let conversation = await prisma.conversation.findUnique({
+      where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
+    })
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: { participantAId: a, participantBId: b },
+      })
+    }
+
+    await notify([{
+      userId: match.menteeId,
+      title: 'Mentorship request accepted',
+      message: 'Your mentorship request has been accepted. Start a conversation with your mentor!',
+      type: 'MENTORSHIP',
+      link: `/messages/${conversation.id}`,
+    }])
+  }
+
+  revalidatePath('/community/mentors')
+}
+
+export async function endMentorship(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const matchId = formData.get('matchId') as string
+  if (!matchId) throw new Error('Match ID is required.')
+
+  const match = await prisma.mentorshipMatch.findUnique({ where: { id: matchId } })
+  if (!match) throw new Error('Match not found.')
+  if (match.mentorId !== userId && match.menteeId !== userId) {
+    throw new Error('You are not part of this mentorship.')
+  }
+  if (match.status !== 'ACCEPTED') throw new Error('Only active mentorships can be ended.')
+
+  await prisma.mentorshipMatch.update({
+    where: { id: matchId },
+    data: { status: 'ENDED' },
+  })
+
+  revalidatePath('/community/mentors')
+}

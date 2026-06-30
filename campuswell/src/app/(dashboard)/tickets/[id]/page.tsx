@@ -17,6 +17,7 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
+import { roleBadgeStyles, roleLabels } from '@/lib/format'
 import {
   StatusDropdown,
   AssignToSelfButton,
@@ -220,20 +221,6 @@ export default async function TicketDetailPage({
           ) : (
             <div className="space-y-4">
               {ticket.comments.map((comment: { id: string; content: string; createdAt: Date; author: { id: string; name: string; role: string; avatarUrl: string | null } }) => {
-                const roleBadgeStyles: Record<string, string> = {
-                  STUDENT:
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-                  STAFF:
-                    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-                  ADMIN:
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-                }
-                const roleLabels: Record<string, string> = {
-                  STUDENT: 'Student',
-                  STAFF: 'Staff',
-                  ADMIN: 'Admin',
-                }
-
                 return (
                   <div key={comment.id} className="flex gap-3">
                     {/* Avatar */}

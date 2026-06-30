@@ -89,6 +89,8 @@ model User {
   role         Role     @default(STUDENT)
   avatarUrl    String?
   bio          String?
+  assistantOptIn   Boolean  @default(false)
+  assistantOptInAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -115,6 +117,11 @@ model User {
   answers               QuestionAnswer[] @relation("AuthoredAnswers")
   ownedStudyGroups      StudyGroup[]     @relation("OwnedStudyGroups")
   groupMemberships      GroupMembership[] @relation("GroupMemberships")
+  mentorAsMentor        MentorshipMatch[] @relation("MentorAsMentor")
+  mentorAsMentee        MentorshipMatch[] @relation("MentorAsMentee")
+  filedReports          ModerationReport[] @relation("FiledReports")
+  assistantUsage        AssistantUsage[]
+  assistantEscalations  AssistantEscalationLog[]
 
   @@map("users")
 }
@@ -464,4 +471,61 @@ model GroupMembership {
   user     User       @relation("GroupMemberships", fields: [userId], references: [id])
   @@unique([groupId, userId])
   @@map("group_memberships")
+}
+
+model MentorshipMatch {
+  id        String   @id @default(cuid())
+  status    String   @default("PENDING")
+  topic     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mentorId  String
+  mentor    User     @relation("MentorAsMentor", fields: [mentorId], references: [id])
+  menteeId  String
+  mentee    User     @relation("MentorAsMentee", fields: [menteeId], references: [id])
+  @@unique([mentorId, menteeId])
+  @@index([status])
+  @@map("mentorship_matches")
+}
+
+model ModerationReport {
+  id         String   @id @default(cuid())
+  reason     String
+  detail     String?
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  resolvedAt DateTime?
+  reporterId String
+  reporter   User     @relation("FiledReports", fields: [reporterId], references: [id])
+  targetType String
+  targetId   String
+  @@index([status])
+  @@map("moderation_reports")
+}
+
+// Per-user assistant usage tracking for rate/cost caps. windowStart is UTC
+// rounded to the hour or day, and the @@unique pair prevents duplicate windows.
+model AssistantUsage {
+  id               String   @id @default(cuid())
+  userId           String
+  windowStart      DateTime
+  messageCount     Int      @default(0)
+  estimatedCostUsd Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, windowStart])
+  @@map("assistant_usage")
+}
+
+// Audit log for assistant escalations — stores trigger type only (no transcripts).
+model AssistantEscalationLog {
+  id               String   @id @default(cuid())
+  userId           String
+  trigger          String
+  detectedKeywords String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("assistant_escalation_logs")
 }

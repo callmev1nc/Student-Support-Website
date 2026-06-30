@@ -6,19 +6,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useTransition } from "react"
 import { toast } from "sonner"
-import { User, Lock, Save } from "lucide-react"
+import { User, Lock, Save, Bot } from "lucide-react"
+import { updateAssistantOptIn } from "@/app/actions/assistant"
 
 export function SettingsClient(props: {
   initialName: string
   initialEmail: string
   initialBio: string
   initialAvatarUrl: string
+  initialAssistantOptIn: boolean
 }) {
   const [name, setName] = useState(props.initialName)
   const [bio, setBio] = useState(props.initialBio)
   const [avatarUrl, setAvatarUrl] = useState(props.initialAvatarUrl)
   const [saving, setSaving] = useState(false)
+
+  const [assistantOptIn, setAssistantOptIn] = useState(props.initialAssistantOptIn)
+  const [optInPending, startOptInTransition] = useTransition()
 
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -179,6 +185,54 @@ export function SettingsClient(props: {
               <Lock className="mr-2 size-4" />
               {changingPassword ? "Changing..." : "Change Password"}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* AI Assistant */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Bot className="size-4" />
+            AI Assistant
+          </CardTitle>
+          <CardDescription>
+            Enable the AI assistant to get instant help with campus resources, study tips, and more.
+            Your conversations are not stored. Crisis keywords are never persisted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            action={() => {
+              const fd = new FormData()
+              fd.set('optIn', String(!assistantOptIn))
+              startOptInTransition(async () => {
+                try {
+                  await updateAssistantOptIn(fd)
+                  setAssistantOptIn(!assistantOptIn)
+                  toast.success(assistantOptIn ? 'AI assistant disabled' : 'AI assistant enabled')
+                } catch {
+                  toast.error('Failed to update preference')
+                }
+              })
+            }}
+            className="space-y-3"
+          >
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium">
+                  {assistantOptIn ? 'AI assistant is enabled' : 'AI assistant is disabled'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {assistantOptIn
+                    ? 'You can use the AI assistant from the sidebar.'
+                    : 'Enable to get AI-powered support.'}
+                </p>
+              </div>
+              <Button type="submit" variant={assistantOptIn ? 'outline' : 'default'} disabled={optInPending}>
+                {assistantOptIn ? 'Disable' : 'Enable'}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

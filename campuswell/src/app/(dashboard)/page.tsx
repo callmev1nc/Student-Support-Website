@@ -18,6 +18,7 @@ import {
   ListTodo,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { roleLabel, appointmentStatusStyles, appointmentStatusLabels } from "@/lib/format"
 
 export default async function DashboardPage() {
   const session = await requireUser()
@@ -120,8 +121,6 @@ export default async function DashboardPage() {
 
   // --- Greeting ---
   const firstName = session.user.name?.split(" ")[0] ?? "User"
-  const roleLabel =
-    role === "ADMIN" ? "Administrator" : role === "STAFF" ? "Staff" : "Student"
 
   return (
     <div className="space-y-8">
@@ -131,7 +130,7 @@ export default async function DashboardPage() {
           Welcome back, {firstName}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s what&apos;s happening on the platform ({roleLabel} view)
+          Here&apos;s what&apos;s happening on the platform ({roleLabel(role)} view)
         </p>
       </div>
 
@@ -264,23 +263,6 @@ export default async function DashboardPage() {
             ) : (
               <ul className="divide-y dark:divide-slate-800">
                 {recentAppointments.map((appt) => {
-                  const statusStyles: Record<string, string> = {
-                    PENDING:
-                      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-                    CONFIRMED:
-                      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-                    CANCELLED:
-                      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-                    COMPLETED:
-                      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-                  }
-                  const statusLabels: Record<string, string> = {
-                    PENDING: "Pending",
-                    CONFIRMED: "Confirmed",
-                    CANCELLED: "Cancelled",
-                    COMPLETED: "Completed",
-                  }
-
                   return (
                     <li key={appt.id}>
                       <div className="flex items-center gap-3 py-3 px-1">
@@ -310,9 +292,9 @@ export default async function DashboardPage() {
                           </p>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[appt.status] ?? statusStyles.PENDING}`}
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${appointmentStatusStyles[appt.status] ?? appointmentStatusStyles.PENDING}`}
                         >
-                          {statusLabels[appt.status] ?? appt.status}
+                          {appointmentStatusLabels[appt.status] ?? appt.status}
                         </span>
                       </div>
                     </li>

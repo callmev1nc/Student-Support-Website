@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { requireUser, requireRole } from '@/lib/session'
 import { bookAppointmentSchema, rescheduleAppointmentSchema, parseForm } from '@/lib/validation'
+import { CONFLICT_WINDOW_MS } from '@/lib/datetime'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -35,8 +36,8 @@ export async function bookAppointment(formData: FormData) {
       staffId,
       status: { in: ['PENDING', 'CONFIRMED'] },
       scheduledAt: {
-        gte: new Date(scheduledDate.getTime() - 29 * 60 * 1000),
-        lte: new Date(scheduledDate.getTime() + 29 * 60 * 1000),
+        gte: new Date(scheduledDate.getTime() - CONFLICT_WINDOW_MS),
+        lte: new Date(scheduledDate.getTime() + CONFLICT_WINDOW_MS),
       },
     },
   })
@@ -290,8 +291,8 @@ export async function rescheduleAppointment(formData: FormData) {
       status: { in: ['PENDING', 'CONFIRMED'] },
       id: { not: appointmentId },
       scheduledAt: {
-        gte: new Date(newDate.getTime() - 29 * 60 * 1000),
-        lte: new Date(newDate.getTime() + 29 * 60 * 1000),
+        gte: new Date(newDate.getTime() - CONFLICT_WINDOW_MS),
+        lte: new Date(newDate.getTime() + CONFLICT_WINDOW_MS),
       },
     },
   })

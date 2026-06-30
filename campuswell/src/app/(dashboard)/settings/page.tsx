@@ -7,7 +7,7 @@ export default async function SettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { name: true, email: true, bio: true, avatarUrl: true },
+    select: { name: true, email: true, bio: true, avatarUrl: true, assistantOptIn: true },
   })
 
   return (
@@ -16,6 +16,7 @@ export default async function SettingsPage() {
       initialEmail={user?.email ?? ""}
       initialBio={user?.bio ?? ""}
       initialAvatarUrl={user?.avatarUrl ?? ""}
+      initialAssistantOptIn={user?.assistantOptIn ?? false}
     />
   )
 }

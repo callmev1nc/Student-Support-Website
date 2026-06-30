@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { requireUser } from '@/lib/session'
 import { Card, CardContent } from '@/components/ui/card'
-import { MessageSquare, HelpCircle, Users } from 'lucide-react'
+import { MessageSquare, HelpCircle, Users, UserCheck } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +56,21 @@ export default async function CommunityHub() {
                 <p className="font-semibold">Study groups</p>
                 <p className="text-xs text-muted-foreground">
                   Join a group or start your own.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/community/mentors">
+          <Card className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <CardContent className="flex items-center gap-3 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-[#C8102E]/10 text-[#C8102E]">
+                <UserCheck className="size-5" />
+              </div>
+              <div>
+                <p className="font-semibold">Mentors</p>
+                <p className="text-xs text-muted-foreground">
+                  Get guidance from staff mentors.
                 </p>
               </div>
             </CardContent>

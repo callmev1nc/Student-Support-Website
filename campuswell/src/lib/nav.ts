@@ -11,6 +11,9 @@ import {
   GraduationCap,
   HeartPulse,
   Users,
+  UserCheck,
+  ShieldCheck,
+  Bot as BotIcon,
 } from 'lucide-react'
 
 export type UserRole = 'STUDENT' | 'STAFF' | 'ADMIN'
@@ -34,8 +37,10 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Study', href: '/study', icon: GraduationCap },
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Wellbeing', href: '/wellbeing', icon: HeartPulse },
+    { label: 'AI Assistant', href: '/assistant', icon: BotIcon },
     { label: 'Announcements', href: '/announcements', icon: Megaphone },
     { label: 'Community', href: '/community', icon: Users },
+    { label: 'Mentors', href: '/community/mentors', icon: UserCheck },
   ],
   STAFF: [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -45,6 +50,8 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Messages', href: '/messages', icon: MessageSquare },
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Community', href: '/community', icon: Users },
+    { label: 'Mentors', href: '/community/mentors', icon: UserCheck },
+    { label: 'Moderation', href: '/community/moderation', icon: ShieldCheck },
   ],
   ADMIN: [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -54,5 +61,6 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Messages', href: '/messages', icon: MessageSquare },
     { label: 'Community', href: '/community', icon: Users },
+    { label: 'Moderation', href: '/community/moderation', icon: ShieldCheck },
   ],
 }
