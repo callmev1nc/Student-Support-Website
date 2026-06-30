@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import type { Role } from '@/generated/prisma/enums'
+import { notifyRole } from '@/lib/notifications'
 import { requireUser } from '@/lib/session'
 import { detectCrisisKeywords } from '@/lib/crisis'
 import { encryptJournal } from '@/lib/journal-crypto'
@@ -27,22 +27,12 @@ export async function createCrisisTicket() {
     },
   })
 
-  const staff = await prisma.user.findMany({
-    where: { role: { in: ['STAFF', 'ADMIN'] as Role[] } },
-    select: { id: true },
+  await notifyRole(['STAFF', 'ADMIN'], {
+    title: 'Urgent wellbeing support request',
+    message: 'A student requested urgent support via the Crisis Banner.',
+    type: 'TICKET',
+    link: `/tickets/${ticket.id}`,
   })
-
-  if (staff.length > 0) {
-    await prisma.notification.createMany({
-      data: staff.map((s: { id: string }) => ({
-        title: 'Urgent wellbeing support request',
-        message: 'A student requested urgent support via the Crisis Banner.',
-        type: 'TICKET',
-        link: `/tickets/${ticket.id}`,
-        userId: s.id,
-      })),
-    })
-  }
 
   revalidatePath('/tickets')
   return { ticketId: ticket.id }

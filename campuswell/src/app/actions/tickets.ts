@@ -5,6 +5,7 @@ import type { TicketCategory, TicketPriority, TicketStatus, NotificationType } f
 import { requireUser, requireRole } from '@/lib/session'
 import { createTicketSchema, updateTicketStatusSchema, addCommentSchema, parseForm } from '@/lib/validation'
 import { rateLimit } from '@/lib/rate-limit'
+import { notifyRole } from '@/lib/notifications'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -32,22 +33,12 @@ export async function createTicket(formData: FormData) {
   })
 
   // Notify all admin users about the new ticket
-  const admins = await prisma.user.findMany({
-    where: { role: 'ADMIN' },
-    select: { id: true },
+  await notifyRole(['ADMIN'], {
+    title: 'New Support Ticket',
+    message: `Ticket "${subject}" has been submitted.`,
+    type: 'TICKET',
+    link: `/tickets/${ticket.id}`,
   })
-
-  if (admins.length > 0) {
-    await prisma.notification.createMany({
-      data: admins.map((admin: { id: string }) => ({
-        title: 'New Support Ticket',
-        message: `Ticket "${subject}" has been submitted.`,
-        type: 'TICKET',
-        link: `/tickets/${ticket.id}`,
-        userId: admin.id,
-      })),
-    })
-  }
 
   revalidatePath('/tickets')
   redirect('/tickets')
