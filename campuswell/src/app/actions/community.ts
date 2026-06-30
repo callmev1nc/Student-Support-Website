@@ -144,3 +144,70 @@ export async function acceptAnswer(formData: FormData) {
 
   revalidatePath(`/community/qna/${answer.question.id}`)
 }
+
+// ── Study groups ────────────────────────────────────────────────────────────
+
+export async function createStudyGroup(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const groupLimit = rateLimit({ key: `group:create:${userId}`, limit: 5, windowMs: 3_600_000 })
+  if (!groupLimit.ok) throw new Error('You are creating groups too quickly. Please wait a bit.')
+
+  const name = (formData.get('name') as string | null)?.trim()
+  const description = (formData.get('description') as string | null)?.trim()
+  const category = (formData.get('category') as string | null)?.trim().slice(0, 50) || 'GENERAL'
+  const meetingInfo = (formData.get('meetingInfo') as string | null)?.trim() || null
+  const maxRaw = formData.get('maxMembers') as string | null
+  const maxMembers = maxRaw && Number(maxRaw) > 0 ? Math.min(Number(maxRaw), 500) : null
+
+  if (!name || name.length < 3) throw new Error('Name must be at least 3 characters.')
+  if (!description || description.length < 10) {
+    throw new Error('Description must be at least 10 characters.')
+  }
+
+  const group = await prisma.studyGroup.create({
+    data: { name, description, category, meetingInfo, maxMembers, ownerId: userId },
+  })
+  // Owner is auto-added as the first member.
+  await prisma.groupMembership.create({ data: { groupId: group.id, userId } })
+
+  revalidatePath('/community/groups')
+  redirect('/community/groups')
+}
+
+export async function joinStudyGroup(formData: FormData) {
+  const { userId } = await requireUser()
+  const groupId = formData.get('groupId') as string
+  if (!groupId) throw new Error('Group ID is required.')
+
+  const group = await prisma.studyGroup.findUnique({
+    where: { id: groupId },
+    include: { _count: { select: { memberships: true } } },
+  })
+  if (!group || group.isClosed) throw new Error('Group is not available.')
+  if (group.maxMembers && group._count.memberships >= group.maxMembers) {
+    throw new Error('This group is full.')
+  }
+
+  // upsert on the (groupId, userId) unique makes join idempotent.
+  await prisma.groupMembership.upsert({
+    where: { groupId_userId: { groupId, userId } },
+    create: { groupId, userId },
+    update: {},
+  })
+  revalidatePath('/community/groups')
+}
+
+export async function leaveStudyGroup(formData: FormData) {
+  const { userId } = await requireUser()
+  const groupId = formData.get('groupId') as string
+  if (!groupId) throw new Error('Group ID is required.')
+
+  const group = await prisma.studyGroup.findUnique({ where: { id: groupId }, select: { ownerId: true } })
+  if (group?.ownerId === userId) {
+    throw new Error('As the owner, you cannot leave your own group.')
+  }
+
+  await prisma.groupMembership.deleteMany({ where: { groupId, userId } })
+  revalidatePath('/community/groups')
+}

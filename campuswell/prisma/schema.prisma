@@ -113,6 +113,8 @@ model User {
   forumReplies          ForumReply[]  @relation("ForumReplies")
   questions             Question[]    @relation("AuthoredQuestions")
   answers               QuestionAnswer[] @relation("AuthoredAnswers")
+  ownedStudyGroups      StudyGroup[]     @relation("OwnedStudyGroups")
+  groupMemberships      GroupMembership[] @relation("GroupMemberships")
 
   @@map("users")
 }
@@ -433,4 +435,33 @@ model QuestionAnswer {
   author      User     @relation("AuthoredAnswers", fields: [authorId], references: [id])
   @@index([questionId])
   @@map("question_answers")
+}
+
+// Joinable study groups. A group is a listing + roster (not a chat); members
+// can DM each other via the existing /messages flow.
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String   @default("GENERAL")
+  meetingInfo String?
+  maxMembers  Int?
+  isClosed    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ownerId     String
+  owner       User     @relation("OwnedStudyGroups", fields: [ownerId], references: [id])
+  memberships GroupMembership[]
+  @@map("study_groups")
+}
+
+model GroupMembership {
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+  groupId  String
+  group    StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User       @relation("GroupMemberships", fields: [userId], references: [id])
+  @@unique([groupId, userId])
+  @@map("group_memberships")
 }
