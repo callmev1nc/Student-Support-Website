@@ -61,7 +61,10 @@ export function AssistantPageClient({
         body: JSON.stringify({ message: text }),
       })
 
-      if (!res.ok) {
+      // Crisis responses (200 JSON) and errors (4xx JSON) come back as JSON;
+      // a normal answer is a text stream. Distinguish by Content-Type.
+      const contentType = res.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
         const data = await res.json().catch(() => ({}))
         if (data.crisis) {
           setMessages((prev) => {
@@ -74,11 +77,13 @@ export function AssistantPageClient({
             }
             return updated
           })
-          setStreaming(false)
           return
         }
-
         throw new Error(data.error || `Error ${res.status}`)
+      }
+
+      if (!res.ok) {
+        throw new Error(`Error ${res.status}`)
       }
 
       const reader = res.body?.getReader()
