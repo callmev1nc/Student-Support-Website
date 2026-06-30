@@ -111,6 +111,8 @@ model User {
   journalEntries        JournalEntry[]
   forumThreads          ForumThread[] @relation("ForumThreads")
   forumReplies          ForumReply[]  @relation("ForumReplies")
+  questions             Question[]    @relation("AuthoredQuestions")
+  answers               QuestionAnswer[] @relation("AuthoredAnswers")
 
   @@map("users")
 }
@@ -396,4 +398,39 @@ model ForumReply {
   author      User     @relation("ForumReplies", fields: [authorId], references: [id])
   @@index([threadId])
   @@map("forum_replies")
+}
+
+// Anonymous-first Q&A (StackOverflow-lite). isAnonymous defaults to true.
+// authorId is stored (moderation/accept) but stripped from serialized
+// anonymous payloads. acceptAnswer sets isAccepted + resolves the question.
+model Question {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  isResolved  Boolean  @default(false)
+  isAnonymous Boolean  @default(true)
+  isHidden    Boolean  @default(false)
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  authorId    String
+  author      User     @relation("AuthoredQuestions", fields: [authorId], references: [id])
+  answers     QuestionAnswer[]
+  @@index([isResolved])
+  @@map("questions")
+}
+
+model QuestionAnswer {
+  id          String   @id @default(cuid())
+  content     String
+  isAccepted  Boolean  @default(false)
+  isAnonymous Boolean  @default(false)
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("AuthoredAnswers", fields: [authorId], references: [id])
+  @@index([questionId])
+  @@map("question_answers")
 }
