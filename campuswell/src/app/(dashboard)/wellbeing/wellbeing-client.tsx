@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useTransition } from "react"
-import { Flame, HeartPulse, Loader2 } from "lucide-react"
+import { Flame, HeartPulse, Loader2, BookOpen, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { saveMood } from "@/app/actions/wellbeing"
+import { Input } from "@/components/ui/input"
+import { saveMood, saveJournal, deleteJournal } from "@/app/actions/wellbeing"
 import { CRISIS_RESOURCES } from "@/lib/crisis"
 
 const MOODS = [
@@ -16,18 +17,51 @@ const MOODS = [
 ] as const
 
 type RecentItem = { score: number; dayKey: string; note: string | null }
+type JournalItem = {
+  id: string
+  title: string
+  content: string
+  mood: number | null
+  createdAt: string
+  decryptable: boolean
+}
+
+function CrisisNote() {
+  return (
+    <div className="space-y-2 rounded-md border border-wsu-red/40 bg-wsu-red/10 p-3">
+      <p className="text-sm font-medium text-wsu-red">
+        We noticed some of what you wrote. You deserve support &mdash; please
+        reach out:
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {CRISIS_RESOURCES.map((r) => (
+          <a
+            key={r.name}
+            href={r.href}
+            className="rounded-md border bg-background px-2 py-1 text-xs font-medium hover:bg-accent"
+          >
+            {r.name}: {r.phone}
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function WellbeingClient({
   todayScore,
   todayNote,
   recent,
   streak,
+  journal,
 }: {
   todayScore: number | null
   todayNote: string
   recent: RecentItem[]
   streak: number
+  journal: JournalItem[]
 }) {
+  // ── Mood check-in ──
   const [score, setScore] = useState<number | null>(todayScore)
   const [note, setNote] = useState(todayNote)
   const [saved, setSaved] = useState(false)
@@ -50,6 +84,48 @@ export function WellbeingClient({
     })
   }
 
+  // ── Private journal ──
+  const [jTitle, setJTitle] = useState("")
+  const [jContent, setJContent] = useState("")
+  const [jMood, setJMood] = useState<number | null>(null)
+  const [jSaving, setJSaving] = useState(false)
+  const [jError, setJError] = useState<string | null>(null)
+  const [jCrisis, setJCrisis] = useState(false)
+  const [jSaved, setJSaved] = useState(false)
+
+  function submitJournal() {
+    if (!jContent.trim()) return
+    setJSaving(true)
+    setJError(null)
+    setJSaved(false)
+    const fd = new FormData()
+    fd.set("title", jTitle)
+    fd.set("content", jContent)
+    if (jMood != null) fd.set("mood", String(jMood))
+    startTransition(async () => {
+      try {
+        const res = await saveJournal(fd)
+        setJTitle("")
+        setJContent("")
+        setJMood(null)
+        setJSaved(true)
+        setJCrisis(res?.crisisHit ?? false)
+      } catch (e) {
+        setJError(e instanceof Error ? e.message : "Could not save entry.")
+      } finally {
+        setJSaving(false)
+      }
+    })
+  }
+
+  function removeJournal(id: string) {
+    const fd = new FormData()
+    fd.set("id", id)
+    startTransition(async () => {
+      await deleteJournal(fd)
+    })
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -62,6 +138,7 @@ export function WellbeingClient({
         </p>
       </div>
 
+      {/* Mood check-in */}
       <div className="space-y-4 rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Today&apos;s check-in</h2>
@@ -114,26 +191,7 @@ export function WellbeingClient({
         {saved && !crisis && (
           <p className="text-sm text-green-600">Saved. Thanks for checking in.</p>
         )}
-
-        {saved && crisis && (
-          <div className="space-y-2 rounded-md border border-wsu-red/40 bg-wsu-red/10 p-3">
-            <p className="text-sm font-medium text-wsu-red">
-              We noticed some of what you wrote. You deserve support &mdash; please
-              reach out:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {CRISIS_RESOURCES.map((r) => (
-                <a
-                  key={r.name}
-                  href={r.href}
-                  className="rounded-md border bg-background px-2 py-1 text-xs font-medium hover:bg-accent"
-                >
-                  {r.name}: {r.phone}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+        {saved && crisis && <CrisisNote />}
       </div>
 
       {recent.length > 0 && (
@@ -161,6 +219,101 @@ export function WellbeingClient({
           </div>
         </div>
       )}
+
+      {/* Private journal */}
+      <div className="space-y-4 rounded-lg border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="size-5 text-wsu-red" />
+          <h2 className="font-semibold">Private journal</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Encrypted at rest &mdash; only you can read your entries. It&apos;s not a
+          medical or crisis service.
+        </p>
+
+        <div className="space-y-2">
+          <Input
+            placeholder="Title (optional)"
+            value={jTitle}
+            onChange={(e) => {
+              setJTitle(e.target.value)
+              setJSaved(false)
+            }}
+            maxLength={200}
+          />
+          <Textarea
+            placeholder="Write a private reflection…"
+            value={jContent}
+            onChange={(e) => {
+              setJContent(e.target.value)
+              setJSaved(false)
+            }}
+            maxLength={20000}
+            rows={5}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Mood (optional):</span>
+            {MOODS.map((m) => (
+              <button
+                key={m.score}
+                type="button"
+                onClick={() => setJMood(jMood === m.score ? null : m.score)}
+                className={`rounded-md border px-2 py-1 text-lg ${
+                  jMood === m.score ? "border-wsu-red bg-wsu-red/10" : ""
+                }`}
+                aria-label={m.label}
+              >
+                {m.emoji}
+              </button>
+            ))}
+          </div>
+
+          <Button onClick={submitJournal} disabled={!jContent.trim() || jSaving}>
+            {jSaving && <Loader2 className="size-4 animate-spin" />}
+            Save entry
+          </Button>
+
+          {jSaved && !jCrisis && (
+            <p className="text-sm text-green-600">Entry saved.</p>
+          )}
+          {jError && <p className="text-sm text-red-600">{jError}</p>}
+          {jSaved && jCrisis && <CrisisNote />}
+        </div>
+
+        <div className="space-y-3">
+          {journal.length === 0 && (
+            <p className="text-sm text-muted-foreground">No entries yet.</p>
+          )}
+          {journal.map((j) => (
+            <div key={j.id} className="rounded-md border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-medium">
+                  {j.decryptable ? j.title || "Untitled" : "Locked entry"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => removeJournal(j.id)}
+                  className="text-muted-foreground hover:text-red-600"
+                  aria-label="Delete entry"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+              {j.decryptable ? (
+                <p className="mt-1 whitespace-pre-wrap text-sm">{j.content}</p>
+              ) : (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  This entry could not be decrypted (the encryption key may have
+                  changed).
+                </p>
+              )}
+              <p className="mt-2 text-xs text-muted-foreground">
+                {new Date(j.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <p className="text-xs text-muted-foreground">
         CampusWell is a supportive tool, not a medical or crisis service. It does

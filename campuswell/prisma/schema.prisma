@@ -108,6 +108,7 @@ model User {
   grades                Grade[]
   studyTasks            StudyTask[]
   focusSessions         FocusSession[]
+  journalEntries        JournalEntry[]
 
   @@map("users")
 }
@@ -338,4 +339,22 @@ model FocusSession {
   createdAt       DateTime   @default(now())
   @@index([userId, startedAt])
   @@map("focus_sessions")
+}
+
+// Private journal. {title, content} is encrypted as one AES-256-GCM blob
+// (payload + per-record iv + authTag) via src/lib/journal-crypto.ts, because
+// Supabase is DB-only with no RLS. A missing JOURNAL_ENCRYPTION_KEY fails
+// lazily (only when the journal is used) so the rest of the app stays up.
+model JournalEntry {
+  id        String   @id @default(cuid())
+  payload   String
+  iv        String
+  authTag   String
+  mood      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@map("journal_entries")
 }

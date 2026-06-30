@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import type { Role } from '@/generated/prisma/enums'
 import { requireUser } from '@/lib/session'
 import { detectCrisisKeywords } from '@/lib/crisis'
+import { encryptJournal } from '@/lib/journal-crypto'
 import { revalidatePath } from 'next/cache'
 
 // Student-initiated request for urgent wellbeing support, triggered from the
@@ -77,4 +78,54 @@ export async function saveMood(formData: FormData) {
 
   revalidatePath('/wellbeing')
   return { crisisHit: crisis.hit }
+}
+
+// Private journal. Title+content are encrypted at rest (AES-256-GCM). The
+// optional text is crisis-scanned BEFORE encrypting to surface help (never to
+// block); the match itself is never persisted. Encryption runs lazily, so a
+// missing JOURNAL_ENCRYPTION_KEY surfaces as a clear error here rather than
+// crashing the app.
+export async function saveJournal(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const title = (formData.get('title') as string | null)?.trim().slice(0, 200) ?? ''
+  const content =
+    (formData.get('content') as string | null)?.trim().slice(0, 20_000) ?? ''
+  if (!content) throw new Error('Please write something before saving.')
+
+  const moodRaw = formData.get('mood')
+  const moodNum = moodRaw ? Number(moodRaw) : NaN
+  const mood =
+    Number.isInteger(moodNum) && moodNum >= 1 && moodNum <= 5 ? moodNum : null
+
+  const crisis = detectCrisisKeywords(`${title} ${content}`)
+
+  const blob = encryptJournal(title, content)
+  await prisma.journalEntry.create({
+    data: {
+      payload: blob.payload,
+      iv: blob.iv,
+      authTag: blob.authTag,
+      mood,
+      userId,
+    },
+  })
+
+  revalidatePath('/wellbeing')
+  return { crisisHit: crisis.hit }
+}
+
+export async function deleteJournal(formData: FormData) {
+  const { userId } = await requireUser()
+
+  const id = formData.get('id') as string
+  if (!id) throw new Error('Entry ID is required.')
+
+  const existing = await prisma.journalEntry.findUnique({ where: { id } })
+  if (!existing || existing.userId !== userId) {
+    throw new Error('Entry not found.')
+  }
+
+  await prisma.journalEntry.delete({ where: { id } })
+  revalidatePath('/wellbeing')
 }
