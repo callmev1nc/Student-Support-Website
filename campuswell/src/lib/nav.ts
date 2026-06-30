@@ -10,6 +10,7 @@ import {
   Briefcase,
   GraduationCap,
   HeartPulse,
+  Users,
 } from 'lucide-react'
 
 export type UserRole = 'STUDENT' | 'STAFF' | 'ADMIN'
@@ -34,6 +35,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Wellbeing', href: '/wellbeing', icon: HeartPulse },
     { label: 'Announcements', href: '/announcements', icon: Megaphone },
+    { label: 'Community', href: '/community', icon: Users },
   ],
   STAFF: [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -42,6 +44,7 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Calendar', href: '/appointments', icon: CalendarDays },
     { label: 'Messages', href: '/messages', icon: MessageSquare },
     { label: 'Resources', href: '/resources', icon: BookOpen },
+    { label: 'Community', href: '/community', icon: Users },
   ],
   ADMIN: [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -50,5 +53,6 @@ export const navItemsByRole: Record<UserRole, NavItem[]> = {
     { label: 'Announcements', href: '/announcements', icon: Megaphone },
     { label: 'Resources', href: '/resources', icon: BookOpen },
     { label: 'Messages', href: '/messages', icon: MessageSquare },
+    { label: 'Community', href: '/community', icon: Users },
   ],
 }

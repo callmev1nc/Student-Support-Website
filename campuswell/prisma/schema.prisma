@@ -109,6 +109,8 @@ model User {
   studyTasks            StudyTask[]
   focusSessions         FocusSession[]
   journalEntries        JournalEntry[]
+  forumThreads          ForumThread[] @relation("ForumThreads")
+  forumReplies          ForumReply[]  @relation("ForumReplies")
 
   @@map("users")
 }
@@ -357,4 +359,41 @@ model JournalEntry {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
   @@map("journal_entries")
+}
+
+// Community forums. authorId is ALWAYS stored (for moderation/notifications)
+// but stripped from serialized payloads when isAnonymous (see the pages'
+// serialization). Flat replies in v1 (no nested threading).
+model ForumThread {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String   @default("GENERAL")
+  isAnonymous Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)
+  isHidden    Boolean  @default(false)
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  authorId    String
+  author      User     @relation("ForumThreads", fields: [authorId], references: [id])
+  replies     ForumReply[]
+  @@index([category])
+  @@index([authorId])
+  @@map("forum_threads")
+}
+
+model ForumReply {
+  id          String   @id @default(cuid())
+  content     String
+  isAnonymous Boolean  @default(false)
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  threadId    String
+  thread      ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("ForumReplies", fields: [authorId], references: [id])
+  @@index([threadId])
+  @@map("forum_replies")
 }
